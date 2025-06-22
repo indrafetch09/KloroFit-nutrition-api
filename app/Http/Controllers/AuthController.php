@@ -1,10 +1,10 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Models\User;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
@@ -53,8 +53,8 @@ class AuthController extends Controller
                     ],
                     'token' => $token->plainTextToken,
                     'token_type' => 'Bearer',
-                    'expires_at' => $token->accessToken->expires_at,
-                ]
+                    'expires_in' => now()->addDays(30)->timestamp                
+                    ]
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
@@ -65,69 +65,71 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * Login user and generate token
+     */
+    public function login(Request $request)
+    {
+
+        try {
+            // Validasi input
+            $validator = Validator::make($request->all(), [
+                'email' => 'required|email',
+                'password' => 'required|string|min:6',
+                'device_name' => 'required|string',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Cek kredensial
+            $user = User::where('email', $request->email)->first();
+
+            if (!$user || !Hash::check($request->password, $user->password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid email or password'
+                ], 401);
+            }
+
+            // Hapus token lama untuk device yang sama (optional)
+            $user->tokens()->where('name', $request->device_name)->delete();
+
+            // Generate token baru
+            $token = $user->createToken($request->device_name, ['*'], now()->addDays(30));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Login successful',
+                'data' => [
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'created_at' => $user->created_at,
+                    ],
+                    'token' => $token->plainTextToken,
+                    'token_type' => 'Bearer',
+                    'expires_in' => now()->addDays(30)->timestamp                
+                    ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 //     /**
-//      * Login user and generate token
-//      */
-//     public function login(Request $request)
-//     {
-//         try {
-//             // Validasi input
-//             $validator = Validator::make($request->all(), [
-//                 'email' => 'required|email',
-//                 'password' => 'required|string|min:6',
-//                 'device_name' => 'required|string', // Untuk identifikasi device
-//             ]);
-
-//             if ($validator->fails()) {
-//                 return response()->json([
-//                     'success' => false,
-//                     'message' => 'Validation failed',
-//                     'errors' => $validator->errors()
-//                 ], 422);
-//             }
-
-//             // Cek kredensial
-//             $user = User::where('email', $request->email)->first();
-
-//             if (!$user || !Hash::check($request->password, $user->password)) {
-//                 return response()->json([
-//                     'success' => false,
-//                     'message' => 'Invalid email or password'
-//                 ], 401);
-//             }
-
-//             // Hapus token lama untuk device yang sama (optional)
-//             $user->tokens()->where('name', $request->device_name)->delete();
-
-//             // Generate token baru
-//             $token = $user->createToken($request->device_name, ['*'], now()->addDays(30));
-
-//             return response()->json([
-//                 'success' => true,
-//                 'message' => 'Login successful',
-//                 'data' => [
-//                     'user' => [
-//                         'id' => $user->id,
-//                         'name' => $user->name,
-//                         'email' => $user->email,
-//                         'created_at' => $user->created_at,
-//                     ],
-//                     'token' => $token->plainTextToken,
-//                     'token_type' => 'Bearer',
-//                     'expires_at' => $token->accessToken->expires_at,
-//                 ]
-//             ], 200);
-//         } catch (\Exception $e) {
-//             return response()->json([
-//                 'success' => false,
-//                 'message' => 'Something went wrong',
-//                 'error' => $e->getMessage()
-//             ], 500);
-//         }
-//     }
-
-//     /**
-//      * Get authenticated user info
+//      * Get authenticated user info (ADMIN ONLY)
 //      */
 //     public function user(Request $request)
 //     {
@@ -157,131 +159,131 @@ class AuthController extends Controller
 //         }
 //     }
 
-//     /**
-//      * Logout user (revoke current token)
-//      */
-//     public function logout(Request $request)
-//     {
-//         try {
-//             // Revoke current token
-//             $request->user()->currentAccessToken()->delete();
+    /**
+     * Logout user (revoke current token)
+     */
+    public function logout(Request $request)
+    {
+        try {
+            // Revoke current token
+            $request->user()->currentAccessToken()->delete();
 
-//             return response()->json([
-//                 'success' => true,
-//                 'message' => 'Logout successful'
-//             ], 200);
-//         } catch (\Exception $e) {
-//             return response()->json([
-//                 'success' => false,
-//                 'message' => 'Something went wrong',
-//                 'error' => $e->getMessage()
-//             ], 500);
-//         }
-//     }
+            return response()->json([
+                'success' => true,
+                'message' => 'Logout successful'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 
-//     /**
-//      * Logout from all devices
-//      */
-//     public function logoutAll(Request $request)
-//     {
-//         try {
-//             // Revoke all tokens
-//             $request->user()->tokens()->delete();
+    /**
+     * Logout from all devices
+     */
+    public function logoutAll(Request $request)
+    {
+        try {
+            // Revoke all tokens
+            $request->user()->tokens()->delete();
 
-//             return response()->json([
-//                 'success' => true,
-//                 'message' => 'Logged out from all devices successfully'
-//             ], 200);
-//         } catch (\Exception $e) {
-//             return response()->json([
-//                 'success' => false,
-//                 'message' => 'Something went wrong',
-//                 'error' => $e->getMessage()
-//             ], 500);
-//         }
-//     }
+            return response()->json([
+                'success' => true,
+                'message' => 'Logged out from all devices successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 
-//     /**
-//      * Refresh token
-//      */
-//     public function refreshToken(Request $request)
-//     {
-//         try {
-//             $user = $request->user();
-//             $currentToken = $request->user()->currentAccessToken();
+    /**
+     * Refresh token
+     */
+    public function refreshToken(Request $request)
+    {
+        try {
+            $user = $request->user();
+            $currentToken = $request->user()->currentAccessToken();
 
-//             // Delete current token
-//             $currentToken->delete();
+            // Delete current token
+            $currentToken->delete();
 
-//             // Create new token
-//             $newToken = $user->createToken(
-//                 $currentToken->name,
-//                 ['*'],
-//                 now()->addDays(30)
-//             );
+            // Create new token
+            $newToken = $user->createToken(
+                $currentToken->name,
+                ['*'],
+                now()->addDays(30)
+            );
 
-//             return response()->json([
-//                 'success' => true,
-//                 'message' => 'Token refreshed successfully',
-//                 'data' => [
-//                     'token' => $newToken->plainTextToken,
-//                     'token_type' => 'Bearer',
-//                     'expires_at' => $newToken->accessToken->expires_at,
-//                 ]
-//             ], 200);
-//         } catch (\Exception $e) {
-//             return response()->json([
-//                 'success' => false,
-//                 'message' => 'Something went wrong',
-//                 'error' => $e->getMessage()
-//             ], 500);
-//         }
-//     }
+            return response()->json([
+                'success' => true,
+                'message' => 'Token refreshed successfully',
+                'data' => [
+                    'token' => $newToken->plainTextToken,
+                    'token_type' => 'Bearer',
+                    'expires_at' => $newToken->accessToken->expires_at,
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 
-//     /**
-//      * Change password
-//      */
-//     public function changePassword(Request $request)
-//     {
-//         try {
-//             $validator = Validator::make($request->all(), [
-//                 'current_password' => 'required|string',
-//                 'new_password' => 'required|string|min:6|confirmed',
-//             ]);
+    /**
+     * Change password
+     */
+    public function changePassword(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'current_password' => 'required|string',
+                'new_password' => 'required|string|min:6|confirmed',
+            ]);
 
-//             if ($validator->fails()) {
-//                 return response()->json([
-//                     'success' => false,
-//                     'message' => 'Validation failed',
-//                     'errors' => $validator->errors()
-//                 ], 422);
-//             }
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
 
-//             $user = $request->user();
+            $user = $request->user();
 
-//             // Verify current password
-//             if (!Hash::check($request->current_password, $user->password)) {
-//                 return response()->json([
-//                     'success' => false,
-//                     'message' => 'Current password is incorrect'
-//                 ], 400);
-//             }
+            // Verify current password
+            if (!Hash::check($request->current_password, $user->password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Current password is incorrect'
+                ], 400);
+            }
 
-//             // Update password
-//             $user->update([
-//                 'password' => Hash::make($request->new_password)
-//             ]);
+            // Update password
+            $user->update([
+                'password' => Hash::make($request->new_password)
+            ]);
 
-//             return response()->json([
-//                 'success' => true,
-//                 'message' => 'Password changed successfully'
-//             ], 200);
-//         } catch (\Exception $e) {
-//             return response()->json([
-//                 'success' => false,
-//                 'message' => 'Something went wrong',
-//                 'error' => $e->getMessage()
-//             ], 500);
-//         }
-//     }
+            return response()->json([
+                'success' => true,
+                'message' => 'Password changed successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

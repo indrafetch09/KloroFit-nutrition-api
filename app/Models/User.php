@@ -10,7 +10,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -21,8 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'device_name'
-    ];
+        ];
 
     /**
      * The attributes that should be hidden for serialization.

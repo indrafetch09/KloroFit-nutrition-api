@@ -10,24 +10,19 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NutritionLibraryController;
 
 
-// AUTH
-Route::post('/auth/register', [AuthController::class, 'register']);
-Route::post('/auth/login', [AuthController::class, 'login']);
+Route::prefix('v1')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
 
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/me', [AuthController::class, 'me']);
+    });
 
-// Route::prefix('auth')->group(function () {
-    // Route::post('/register', [AuthController::class, 'register']);
-    // Route::post('/login', [AuthController::class, 'login']);
-    
-    // Route::middleware('auth:sanctum')->group(function () {
-    //     Route::post('/logout', [AuthController::class, 'logout']);
-    //     Route::get('/me', [AuthController::class, 'me']);
-    // });
-
-    // // Verifikasi email (biasanya otomatis via Laravel built-in)
-    // Route::get('/verify-email/{id}/{hash}', [AuthController::class, 'verifyEmail'])
-    //     ->middleware(['signed'])->name('verification.verify');
-// });
+    // Verifikasi email (biasanya otomatis via Laravel built-in)
+    Route::get('/verify-email/{id}/{hash}', [AuthController::class, 'verifyEmail'])
+        ->middleware(['signed'])->name('verification.verify');
+});
 
 // // HOME / DASHBOARD
 // Route::middleware(['auth:sanctum', 'verified'])->prefix('home')->group(function () {
