@@ -159,6 +159,27 @@ class AuthController extends Controller
 //         }
 //     }
 
+// under construction
+    // public function socailLogin(Request $request)
+    // {
+    //     // Implement social login logic here
+    //     // This is a placeholder method for future social login integration
+    //     return response()->json([
+    //         'success' => false,
+    //         'message' => 'Social login not implemented yet'
+    //     ], 501);
+    // }
+
+    // public funciton verifyEmail(Request $request, $id, $hash)
+    // {
+    //     // Implement email verification logic here
+    //     // This is a placeholder method for future email verification integration
+    //     return response()->json([
+    //         'success' => false,
+    //         'message' => 'Email verification not implemented yet'
+    //     ], 501);
+    // }
+
     /**
      * Logout user (revoke current token)
      */

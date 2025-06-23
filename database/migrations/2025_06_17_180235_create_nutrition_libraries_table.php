@@ -19,12 +19,6 @@ return new class extends Migration
             $table->float('protein')->nullable();
             $table->float('carbs')->nullable();
             $table->text('image')->nullable();
-
-            $table->decimal('calories_per_100g', 8, 2);
-            $table->decimal('fat_per_100g', 8, 2);
-            $table->decimal('protein_per_100g', 8, 2);
-            $table->decimal('carbs_per_100g', 8, 2);
-    
             $table->boolean('is_verified')->default(false); // Admin verified
             $table->timestamps();
     
