@@ -7,16 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 class Food extends Model
 {
     protected $fillable = [
-        'user_id', 'nutrition_library_id', 'portion_grams', 
+        'user_id', 'nutrition_libraries_id', 
         'meal_type', 'date'
     ];
     
     public function user() { return $this->belongsTo(User::class); }
-    public function nutritionLibrary() { return $this->belongsTo(NutritionLibrary::class); }
+    public function nutritionLibrary() { return $this->belongsTo(NutritionLibrary::class,'nutrition_libraries_id'); }
     
     // Calculate actual nutrients based on portion
     public function getCalculatedNutrientsAttribute() {
-        return $this->nutritionLibrary->calculateNutrients($this->portion_grams);
+        return $this->nutritionLibraries->calculateNutrients($this->nutritionlibraries_id);
     }
     
     public function getCaloriesAttribute() {
