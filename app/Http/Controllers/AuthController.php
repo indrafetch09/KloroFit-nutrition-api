@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\User;
 
 use Illuminate\Http\Request;
@@ -53,8 +54,8 @@ class AuthController extends Controller
                     ],
                     'token' => $token->plainTextToken,
                     'token_type' => 'Bearer',
-                    'expires_in' => now()->addDays(30)->timestamp                
-                    ]
+                    'expires_in' => now()->addDays(30)->timestamp
+                ]
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
@@ -115,10 +116,9 @@ class AuthController extends Controller
                     ],
                     'token' => $token->plainTextToken,
                     'token_type' => 'Bearer',
-                    'expires_in' => now()->addDays(30)->timestamp                
-                    ]
+                    'expires_in' => now()->addDays(30)->timestamp
+                ]
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -128,38 +128,38 @@ class AuthController extends Controller
         }
     }
 
-//     /**
-//      * Get authenticated user info (ADMIN ONLY)
-//      */
-//     public function user(Request $request)
-//     {
-//         try {
-//             $user = $request->user();
+    //     /**
+    //      * Get authenticated user info (ADMIN ONLY)
+    //      */
+    //     public function user(Request $request)
+    //     {
+    //         try {
+    //             $user = $request->user();
 
-//             return response()->json([
-//                 'success' => true,
-//                 'message' => 'User data retrieved successfully',
-//                 'data' => [
-//                     'user' => [
-//                         'id' => $user->id,
-//                         'name' => $user->name,
-//                         'email' => $user->email,
-//                         'email_verified_at' => $user->email_verified_at,
-//                         'created_at' => $user->created_at,
-//                         'updated_at' => $user->updated_at,
-//                     ]
-//                 ]
-//             ], 200);
-//         } catch (\Exception $e) {
-//             return response()->json([
-//                 'success' => false,
-//                 'message' => 'Something went wrong',
-//                 'error' => $e->getMessage()
-//             ], 500);
-//         }
-//     }
+    //             return response()->json([
+    //                 'success' => true,
+    //                 'message' => 'User data retrieved successfully',
+    //                 'data' => [
+    //                     'user' => [
+    //                         'id' => $user->id,
+    //                         'name' => $user->name,
+    //                         'email' => $user->email,
+    //                         'email_verified_at' => $user->email_verified_at,
+    //                         'created_at' => $user->created_at,
+    //                         'updated_at' => $user->updated_at,
+    //                     ]
+    //                 ]
+    //             ], 200);
+    //         } catch (\Exception $e) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Something went wrong',
+    //                 'error' => $e->getMessage()
+    //             ], 500);
+    //         }
+    //     }
 
-// under construction
+    // under construction
     // public function socailLogin(Request $request)
     // {
     //     // Implement social login logic here
@@ -186,8 +186,22 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         try {
-            // Revoke current token
-            $request->user()->currentAccessToken()->delete();
+            $token = $request->user()?->currentAccessToken();
+
+            if (!$token) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid token or not authenticated'
+                ], 401);
+            }
+
+            $token->delete();
+
+            // Revoke current token if it exists
+            $currentToken = $request->user()->currentAccessToken();
+            if ($currentToken) {
+                $currentToken->delete();
+            }
 
             return response()->json([
                 'success' => true,

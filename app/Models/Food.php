@@ -3,36 +3,49 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Food extends Model
 {
     protected $fillable = [
-        'user_id', 'nutrition_libraries_id', 
-        'meal_type', 'date'
+        'user_id',
+        'nutrition_library_id',
+        'meal_type',
+        'date'
     ];
-    
-    public function user() { return $this->belongsTo(User::class); }
-    public function nutritionLibrary() { return $this->belongsTo(NutritionLibrary::class,'nutrition_libraries_id'); }
-    
-    // Calculate actual nutrients based on portion
-    public function getCalculatedNutrientsAttribute() {
-        return $this->nutritionLibraries->calculateNutrients($this->nutritionlibraries_id);
+
+    protected $casts = [
+        'date' => 'date',
+    ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
-    
-    public function getCaloriesAttribute() {
-        return $this->calculated_nutrients['calories'];
+
+    public function nutritionLibrary(): BelongsTo
+    {
+        return $this->belongsTo(NutritionLibrary::class);
     }
-    
-    public function getFatAttribute() {
-        return $this->calculated_nutrients['fat'];
+
+    // Optional: calculated nutrients accessor
+    public function getCaloriesAttribute()
+    {
+        return optional($this->nutritionLibrary)->calories;
     }
-    
-    public function getProteinAttribute() {
-        return $this->calculated_nutrients['protein'];
+
+    public function getFatAttribute()
+    {
+        return optional($this->nutritionLibrary)->fat;
     }
-    
-    public function getCarbsAttribute() {
-        return $this->calculated_nutrients['carbs'];
+
+    public function getProteinAttribute()
+    {
+        return optional($this->nutritionLibrary)->protein;
+    }
+
+    public function getCarbsAttribute()
+    {
+        return optional($this->nutritionLibrary)->carbs;
     }
 }
-
