@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Activity;
-use App\Http\Requests\ActivityRequest;
 use App\Services\SummaryService;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\ActivityRequest;
+use App\Http\Resources\ActivityResource;
 
 class ActivityController extends Controller
 {
@@ -19,14 +20,14 @@ class ActivityController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'You have not added any activities yet',
-                'data' => 'empty',
+                'data' => null,
             ], 404);
         }
 
         return response()->json([
             'success' => true,
             'message' => 'Activities fetched successfully',
-            'data' => $activities,
+            'data' => new ActivityResource($activities),
         ]);
     }
 

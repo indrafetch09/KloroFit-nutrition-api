@@ -11,7 +11,7 @@ class Food extends Model
 
     protected $fillable = [
         'user_id',
-        'nutrition_library_id',
+        'nutrition_libraries_id',
         'meal_type',
         'date'
     ];

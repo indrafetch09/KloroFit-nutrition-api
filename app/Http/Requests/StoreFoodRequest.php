@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\MealType;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreFoodRequest extends FormRequest
@@ -17,7 +18,7 @@ class StoreFoodRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'calories' => 'required|numeric|min:0',
-            'meal_type' => 'required|in:breakfast,lunch,dinner,snack',
+            'meal_type' => MealType::rules(), // breakfast, lunch, dinner, snack
             'date' => 'required|date',
         ];
     }

@@ -20,7 +20,7 @@ class ActivityRequest extends FormRequest
             'date' => 'required|date',
             'hour' => 'required|date_format:H:i',
             'duration_minutes' => 'required|integer|min:1',
-            'distance_km' => 'nullable|numeric|min:0',
+            'distance' => 'nullable|numeric|min:0',
             'calories_burned' => 'nullable|numeric|min:0',
         ];
     }
