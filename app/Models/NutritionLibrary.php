@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class NutritionLibrary extends Model
 {
-    protected $table = 'nutrition_libraries'; // penting kalau nama tabel nggak pakai plural auto
+    protected $table = 'nutrition_libraries';
 
     protected $fillable = [
         'name',

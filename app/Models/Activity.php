@@ -6,16 +6,19 @@ use Illuminate\Database\Eloquent\Model;
 
 class Activity extends Model
 {
+    protected $table = 'activities';
+
     protected $fillable = [
-        'user_id', 
-        'type', 
+        'user_id',
+        'type',
         'distance',
-        'calories_burned', 
+        'calories_burned',
         'date'
     ];
 
-    
-    public function user() { 
-        return $this->belongsTo(User::class); 
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
-use App\Http\Resources\NutritionLibraryResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class FoodResource extends JsonResource
@@ -12,12 +11,11 @@ class FoodResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'user_id' => $this->user_id,
-            'nutrition_library' => new NutritionLibraryResource($this->nutritionLibrary),
+            'name' => $this->name,
+            'calories' => $this->calories,
             'meal_type' => $this->meal_type,
-            'date' => $this->date,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'date' => $this->date->toDateString(), // Format Y-m-d
+            'created_at' => $this->created_at->toDateTimeString(),
         ];
     }
 }

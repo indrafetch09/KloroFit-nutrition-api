@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Food extends Model
 {
+    protected $table = 'foods';
+
     protected $fillable = [
         'user_id',
         'nutrition_library_id',
@@ -25,10 +27,9 @@ class Food extends Model
 
     public function nutritionLibrary(): BelongsTo
     {
-        return $this->belongsTo(NutritionLibrary::class);
+        return $this->belongsTo(NutritionLibrary::class, 'nutrition_libraries_id');
     }
 
-    // Optional: calculated nutrients accessor
     public function getCaloriesAttribute()
     {
         return optional($this->nutritionLibrary)->calories;

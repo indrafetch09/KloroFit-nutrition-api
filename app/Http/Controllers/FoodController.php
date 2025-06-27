@@ -3,60 +3,93 @@
 namespace App\Http\Controllers;
 
 use App\Models\Food;
+use App\Services\SummaryService;
 use App\Http\Resources\FoodResource;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\StoreFoodRequest;
+use App\Http\Requests\UpdateFoodRequest;
 
 class FoodController extends Controller
 {
-    // List foods
-    public function summary(Request $request)
+    public function show()
     {
-        $request->validate([
-            'date' => 'required|date',
-            'meal_Type' => 'nullable|in:breakfast,lunch,dinner,snack',
 
+        $foods = Food::where('user_id', Auth::id())
+            ->orderBy('date', 'desc')
+            ->get();
 
+        if ($foods->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'you have not added any foods yet',
+                'data' => null
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Foods fetched successfully',
+            'data' => FoodResource::collection($foods),
         ]);
     }
 
-    // Add foods
-    public function store(Request $request)
+    public function store(StoreFoodRequest $request)
     {
         $data = $request->validated();
         $data['user_id'] = Auth::id();
 
+        // Check if user has set a daily goal
+        $user = Auth::user();
+        if (!$user->goal || $user->goal->calories_per_day <= 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please set your goal first.'
+            ], 403); // 403 Forbidden
+        }
+
         $food = Food::create($data);
+
+        SummaryService::updateUserSummary(Auth::id(), $data['date']);
 
         return response()->json([
             'success' => true,
-            'message' => 'Food added',
+            'message' => 'Food added & summary updated',
             'data' => new FoodResource($food),
         ]);
     }
 
-    // Update foods
-    public function update($id, Request $request)
+    public function update($id, UpdateFoodRequest $request)
     {
         $food = Food::where('user_id', Auth::id())->findOrFail($id);
+        $oldDate = $food->date;
+
         $food->update($request->validated());
+        $newDate = $request->date ?? $oldDate;
+
+        SummaryService::updateUserSummary(Auth::id(), $oldDate);
+
+        if ($oldDate !== $newDate) {
+            SummaryService::updateUserSummary(Auth::id(), $newDate);
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Food updated',
-            'data' => $food,
+            'message' => 'Food updated & summary updateUserSummaryd',
+            'data' => new FoodResource($food),
         ]);
     }
 
-    // Delete foods
-    public function destroy($id)
+    public function destroy($id,)
     {
         $food = Food::where('user_id', Auth::id())->findOrFail($id);
+        $date = $food->date;
         $food->delete();
+
+        SummaryService::updateUserSummary(Auth::id(), $date);
 
         return response()->json([
             'success' => true,
-            'message' => 'Food deleted',
+            'message' => 'Food deleted & summary updated',
         ]);
     }
 }
