@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Food;
 use App\Services\SummaryService;
+use App\Http\Requests\FoodRequest;
 use App\Http\Resources\FoodResource;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\StoreFoodRequest;
-use App\Http\Requests\UpdateFoodRequest;
+use Illuminate\Http\Request;
 
 class FoodController extends Controller
 {
@@ -20,7 +20,7 @@ class FoodController extends Controller
         if ($foods->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'you have not added any foods yet',
+                'message' => 'You have not added any foods yet',
                 'data' => null
             ], 404);
         }
@@ -32,71 +32,77 @@ class FoodController extends Controller
         ]);
     }
 
-    public function store(StoreFoodRequest $request)
+    public function store(FoodRequest $request)
     {
         $data = $request->validated();
-        $data['user_id'] = Auth::id();
-
         $user = Auth::user();
-        if (!$user->goal || $user->goal->calories_per_day <= 0) {
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized.'
+            ], 401);
+        }
+
+        if (!$user->goal || $user->goal->calories <= 0) {
             return response()->json([
                 'success' => false,
                 'message' => 'Please set your goal first.'
             ], 403);
         }
 
-        $foods = Food::create($data);
-
-        if ($foods->isEmpty()) {
+        $mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
+        if (!in_array($data['meal_type'], $mealTypes)) {
             return response()->json([
                 'success' => false,
-                'message' => 'you have not added any foods yet',
-                'data' => null
-            ], 404);
+                'message' => 'Invalid meal type. Allowed: breakfast, lunch, dinner, snack.'
+            ], 422);
         }
 
-        SummaryService::updateUserSummary(Auth::id(), $data['date']);
+        $data['user_id'] = $user->id;
+        $food = Food::create($data);
+
+        SummaryService::updateUserSummary($user->id, $data['date']);
 
         return response()->json([
             'success' => true,
-            'message' => 'Food added & summary updated',
-            'data' => new FoodResource($foods),
-            201
-        ]);
+            'message' => 'Food added and summary updated.',
+            'data' => new FoodResource($food),
+        ], 201);
     }
 
-    public function update($id, UpdateFoodRequest $request)
+    public function update($id, FoodRequest $request)
     {
-        $foods = Food::where('user_id', Auth::id())->findOrFail($id);
-        $oldDate = $foods->date;
+        $food = Food::where('user_id', Auth::id())->findOrFail($id);
+        $oldDate = $food->date;
 
-        $foods->update($request->validated());
+        $food->update($request->validated());
+
         $newDate = $request->date ?? $oldDate;
 
         SummaryService::updateUserSummary(Auth::id(), $oldDate);
-
         if ($oldDate !== $newDate) {
             SummaryService::updateUserSummary(Auth::id(), $newDate);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Food updated',
-            'data' => new FoodResource($foods),
+            'message' => 'Food updated & summary refreshed.',
+            'data' => new FoodResource($food),
         ]);
     }
 
-    public function destroy($id,)
+    public function destroy($id)
     {
-        $foods = Food::where('user_id', Auth::id())->findOrFail($id);
-        $date = $foods->date;
-        $foods->delete();
+        $food = Food::where('user_id', Auth::id())->findOrFail($id);
+        $date = $food->date;
+        $food->delete();
 
         SummaryService::updateUserSummary(Auth::id(), $date);
 
         return response()->json([
             'success' => true,
-            'message' => 'Food deleted & summary updated',
+            'message' => 'Food deleted & summary updated.',
         ]);
     }
 }

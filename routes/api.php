@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FoodController;
 use App\Http\Controllers\GoalController;
-use App\Http\Controllers\GoalsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SummaryController;
 use App\Http\Controllers\ActivityController;
@@ -46,18 +45,17 @@ Route::prefix('v1')->group(function () {
 
         // Activity tracking 
         Route::prefix('activities')->group(function () {
-            Route::get('/', [FoodController::class, 'show']);
-            Route::post('/', [FoodController::class, 'store']);
-            Route::put('/{id}', [FoodController::class, 'update']);
-            Route::delete('/{id}', [FoodController::class, 'destroy']);
+            Route::get('/', [ActivityController::class, 'show']);
+            Route::post('/', [ActivityController::class, 'store']);
+            Route::put('/{id}', [ActivityController::class, 'update']);
+            Route::delete('/{id}', [ActivityController::class, 'destroy']);
         });
 
         // Summary for foods
         Route::get('/foods/summary/{date}', [SummaryController::class, 'show']);
 
         // Dashboard
-        Route::get('/dashboard', [DashboardController::class, 'index']);
-        Route::get('/statistics', [DashboardController::class, 'statistics']);
+        Route::get('/dashboard', [DashboardController::class, 'show']);
 
         // Profile
         Route::get('/profile', [ProfileController::class, 'show']);
