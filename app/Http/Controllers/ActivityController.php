@@ -34,7 +34,15 @@ class ActivityController extends Controller
     public function store(ActivityRequest $request)
     {
         $data = $request->validated();
+        $user = Auth::user();
         $data['user_id'] = Auth::id();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized.'
+            ], 401);
+        }
 
         $activity = Activity::create($data);
 

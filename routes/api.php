@@ -1,7 +1,6 @@
 <?php
 
-use App\Models\Summary;
-use App\Models\Activity;
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FoodController;
@@ -14,6 +13,13 @@ use App\Http\Controllers\NutritionLibraryController;
 
 Route::prefix('v1')->group(function () {
     // Auth routes
+    Route::get('/', function () {
+        return response()->json([
+            'success' => true,
+            'message' => 'Welcome to Klorofit API',
+            'data' => null
+        ]);
+    });
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
     // Route::post('/social-login', [AuthController::class, 'socialLogin']);

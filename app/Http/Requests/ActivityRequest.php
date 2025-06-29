@@ -38,4 +38,13 @@ class ActivityRequest extends FormRequest
 
         return $common;
     }
+
+    public function messages(): array
+    {
+        return [
+            'type.in' => 'Activity type is not valid. It must be one of this type: run, walk, swimming, or cycling.',
+            'date.before_or_equal' => 'Date is not valid.',
+            // dst
+        ];
+    }
 }

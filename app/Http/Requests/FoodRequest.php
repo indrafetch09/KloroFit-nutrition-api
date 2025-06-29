@@ -38,4 +38,14 @@ class FoodRequest extends FormRequest
 
         return $common;
     }
+
+    public function messages(): array
+    {
+        return [
+            'meal_type.in' => 'Meal type is not valid. It must be one of these types: breakfast, lunch, dinner, or snack.',
+            'date.before_or_equal' => 'Date is not valid. It must be today or earlier.',
+            'nutrition_library_id.exists' => 'The selected nutrition library does not exist.',
+            'portion_grams.min' => 'Portion grams must be at least 1 gram.',
+        ];
+    }
 }

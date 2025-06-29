@@ -7,7 +7,6 @@ use App\Services\SummaryService;
 use App\Http\Requests\FoodRequest;
 use App\Http\Resources\FoodResource;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
 
 class FoodController extends Controller
 {
@@ -36,6 +35,8 @@ class FoodController extends Controller
     {
         $data = $request->validated();
         $user = Auth::user();
+        $data['user_id'] = Auth::id();
+
 
         if (!$user) {
             return response()->json([
@@ -49,14 +50,6 @@ class FoodController extends Controller
                 'success' => false,
                 'message' => 'Please set your goal first.'
             ], 403);
-        }
-
-        $mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
-        if (!in_array($data['meal_type'], $mealTypes)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid meal type. Allowed: breakfast, lunch, dinner, snack.'
-            ], 422);
         }
 
         $data['user_id'] = $user->id;
