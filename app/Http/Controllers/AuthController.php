@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Sanctum\PersonalAccessToken;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -186,27 +187,17 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         try {
-            $token = $request->user()?->currentAccessToken();
+            $user = $request->user();
+            $token = $user->currentAccessToken();
 
-            if (!$token) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid token or not authenticated'
-                ], 401);
-            }
-
-            $token->delete();
-
-            // Revoke current token if it exists
-            $currentToken = $request->user()->currentAccessToken();
-            if ($currentToken) {
-                $currentToken->delete();
+            if ($token && $token instanceof PersonalAccessToken) {
+                $token->delete();
             }
 
             return response()->json([
                 'success' => true,
                 'message' => 'Logout successful'
-            ], 200);
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -247,8 +238,9 @@ class AuthController extends Controller
             $user = $request->user();
             $currentToken = $request->user()->currentAccessToken();
 
-            // Delete current token
-            $currentToken->delete();
+            if ($currentToken && $currentToken instanceof PersonalAccessToken) {
+                $currentToken->delete();
+            }
 
             // Create new token
             $newToken = $user->createToken(

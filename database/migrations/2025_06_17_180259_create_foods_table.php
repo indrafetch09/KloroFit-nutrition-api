@@ -12,8 +12,8 @@ return new class extends Migration
         Schema::create('foods', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('nutrition_libraries_id')->constrained('nutrition_libraries')->onDelete('cascade');
-            $table->decimal('portion_grams', 8, 2);
+            $table->foreignId('nutrition_library_id')->constrained('nutrition_libraries')->onDelete('cascade');
+            $table->decimal('portion_grams', 8, 2)->default(100); // Default portion size is 100 grams
             $table->enum('meal_type', ['breakfast', 'lunch', 'dinner', 'snack']);
             $table->date('date');
             $table->timestamps();

@@ -23,7 +23,7 @@ class FoodRequest extends FormRequest
         if (request()->isMethod('POST')) {
             return array_merge($common, [
                 'nutrition_library_id' => ['required', 'exists:nutrition_libraries,id'],
-                'portion_grams' => ['required', 'numeric', 'min:1'],
+                'portion_grams' => ['nullable', 'numeric', 'min:1'],
             ]);
         }
 

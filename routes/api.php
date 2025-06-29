@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FoodController;
 use App\Http\Controllers\GoalController;
-use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\SummaryController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\DashboardController;
@@ -64,8 +64,9 @@ Route::prefix('v1')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'show']);
 
         // Profile
-        Route::get('/profile', [ProfileController::class, 'show']);
-        Route::put('/profile', [ProfileController::class, 'update']);
+        Route::get('/profile', [UserController::class, 'show']);
+        Route::post('/profile', [UserController::class, 'store']);
+        Route::put('/profile', [UserController::class, 'update']);
     });
 });
 

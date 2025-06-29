@@ -21,9 +21,7 @@ return new class extends Migration
             $table->text('image')->nullable();
             $table->boolean('is_verified')->default(false); // Admin verified
             $table->timestamps();
-    
-});
-
+        });
     }
 
     /**

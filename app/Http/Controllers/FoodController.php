@@ -35,8 +35,6 @@ class FoodController extends Controller
     {
         $data = $request->validated();
         $user = Auth::user();
-        $data['user_id'] = Auth::id();
-
 
         if (!$user) {
             return response()->json([
@@ -53,6 +51,8 @@ class FoodController extends Controller
         }
 
         $data['user_id'] = $user->id;
+
+        $data['portion_grams'] = $data['portion_grams'] ?? 100;
         $food = Food::create($data);
 
         SummaryService::updateUserSummary($user->id, $data['date']);
@@ -63,6 +63,7 @@ class FoodController extends Controller
             'data' => new FoodResource($food),
         ], 201);
     }
+
 
     public function update($id, FoodRequest $request)
     {
