@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\MealType;
 use App\Models\Food;
 use App\Services\SummaryService;
-use App\Http\Requests\FoodRequest;
 use App\Http\Resources\FoodResource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+
 
 class FoodController extends Controller
 {
@@ -31,41 +34,96 @@ class FoodController extends Controller
         ]);
     }
 
-    public function store(FoodRequest $request)
+    public function store(Request $request)
     {
-        $data = $request->validated();
         $user = Auth::user();
 
         if (!$user) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized.'
+                'message' => 'Unauthorized.',
             ], 401);
         }
 
         if (!$user->goal || $user->goal->calories <= 0) {
             return response()->json([
                 'success' => false,
-                'message' => 'Please set your goal first.'
+                'message' => 'Please set your goal first.',
             ], 403);
         }
 
+        // Validasi manual
+        $validator = Validator::make($request->all(), [
+            'nutrition_libraries_id' => 'required|exists:nutrition_libraries,id',
+            'portion_grams' => 'nullable|numeric|min:1',
+            'meal_type' => MealType::rules(),
+            'date' => 'required|date'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $data = $validator->validated();
         $data['user_id'] = $user->id;
 
-        $data['portion_grams'] = $data['portion_grams'] ?? 100;
         $food = Food::create($data);
 
+        // Update summary harian
         SummaryService::updateUserSummary($user->id, $data['date']);
 
         return response()->json([
             'success' => true,
             'message' => 'Food added and summary updated.',
-            'data' => new FoodResource($food),
+            'data' => $food,
         ], 201);
+
+        // $validated = $request->validated();
+        // $user = Auth::user();
+
+        // if (!$user) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Unauthorized.'
+        //     ], 401);
+        // }
+
+        // if (!$user->goal || $user->goal->calories <= 0) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Please set your goal first.'
+        //     ], 403);
+        // }
+
+        // $data['portion_grams'] = $data['portion_grams'] ?? 100;
+
+        // $food = Food::create([
+        //     'user_id' => Auth::id(),
+        //     'nutrition_libraries_id' => $validated['nutrition_library_id'],
+        //     'meal_type' => $validated['meal_type'],
+        //     'date' => $validated['date'],
+        //     'portion_grams' => $validated['portion_grams'] ?? null,
+        // ]);
+
+        // return response()->json(['message' => 'Food added', 'data' => $food], 201);
+
+        // $food = Food::create($data);
+
+        // SummaryService::updateUserSummary($user->id, $data['date']);
+
+        // return response()->json([
+        //     'success' => true,
+        //     'message' => 'Food added and summary updated.',
+        //     'data' => new FoodResource($food),
+        // ], 201);
     }
 
 
-    public function update($id, FoodRequest $request)
+    public function update($id, Request $request)
     {
         $food = Food::where('user_id', Auth::id())->findOrFail($id);
         $oldDate = $food->date;

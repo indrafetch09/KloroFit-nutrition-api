@@ -44,7 +44,7 @@ Route::prefix('v1')->group(function () {
         // Food tracking
         Route::prefix('foods')->group(function () {
             Route::get('/', [FoodController::class, 'show']);
-            Route::post('/', [FoodController::class, 'store']);
+            Route::post('/set', [FoodController::class, 'store']);
             Route::put('/{id}', [FoodController::class, 'update']);
             Route::delete('/{id}', [FoodController::class, 'destroy']);
         });
@@ -52,7 +52,7 @@ Route::prefix('v1')->group(function () {
         // Activity tracking 
         Route::prefix('activities')->group(function () {
             Route::get('/', [ActivityController::class, 'show']);
-            Route::post('/', [ActivityController::class, 'store']);
+            Route::post('/set', [ActivityController::class, 'store']);
             Route::put('/{id}', [ActivityController::class, 'update']);
             Route::delete('/{id}', [ActivityController::class, 'destroy']);
         });
