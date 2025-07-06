@@ -10,12 +10,12 @@ class Summary extends Model
 
     protected $fillable = [
         'user_id',
+        'type',
         'date',
         'calories',
         'fat',
         'protein',
         'carbs',
-
         'activity_calories',
         'activity_minutes'
     ];

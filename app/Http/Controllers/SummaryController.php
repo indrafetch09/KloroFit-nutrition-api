@@ -18,6 +18,25 @@ class SummaryController extends Controller
 
         $summary = Summary::where('user_id', $userId)
             ->where('date', $date)
+            ->where('type', 'food')
+            ->first();
+
+        return response()->json([
+            'success' => true,
+            'data' => $summary ? new SummaryResource($summary) : null,
+
+        ]);
+    }
+
+    public function update($date)
+    {
+        $userId = Auth::id();
+
+        // Pastikan summary up-to-date
+        SummaryService::updateUserSummary($userId, $date);
+
+        $summary = Summary::where('user_id', $userId)
+            ->where('date', $date)
             ->first();
 
         return response()->json([

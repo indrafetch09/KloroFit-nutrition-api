@@ -12,8 +12,11 @@ class FoodResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'calories' => $this->calories,
             'meal_type' => $this->meal_type,
+            'calories' => $this->calories,
+            'fat' => $this->fat,
+            'protein' => $this->protein,
+            'carbs' => $this->carbs,
             'date' => $this->date->toDateString(), // Format Y-m-d
             'created_at' => $this->created_at->toDateTimeString(),
         ];

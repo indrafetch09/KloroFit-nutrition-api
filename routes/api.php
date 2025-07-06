@@ -11,6 +11,7 @@ use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NutritionLibraryController;
 
+
 Route::prefix('v1')->group(function () {
     // Auth routes
     Route::get('/', function () {
@@ -20,6 +21,7 @@ Route::prefix('v1')->group(function () {
             'data' => null
         ]);
     });
+
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
     // Route::post('/social-login', [AuthController::class, 'socialLogin']);
@@ -32,8 +34,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/logout-all', [AuthController::class, 'logoutAll']);
         Route::post('/refresh-token', [AuthController::class, 'refreshTokens']);
 
-        // Nutrition Library for admin
-        // Route::apiResource('nutrition-libraries', NutritionLibraryController::class); 
+        // Nutrition Library search
         Route::apiResource('nutrition-libraries', NutritionLibraryController::class)->only(['index', 'show']);
 
         // Set goals
@@ -57,16 +58,18 @@ Route::prefix('v1')->group(function () {
             Route::delete('/{id}', [ActivityController::class, 'destroy']);
         });
 
-        // Summary for foods
-        Route::get('/foods/summary/{date}', [SummaryController::class, 'show']);
+        // DoSummary
+        Route::get('/summary/{date}', [SummaryController::class, 'show']);
 
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'show']);
 
         // Profile
-        Route::get('/profile', [UserController::class, 'show']);
-        Route::post('/profile', [UserController::class, 'store']);
-        Route::put('/profile', [UserController::class, 'update']);
+        Route::get('/profile', [UserController::class, 'profile']);
+        Route::put('/profile', [UserController::class, 'updateProfile']);
+        Route::put('/password', [UserController::class, 'updatePassword']);
+        Route::get('/settings', [UserController::class, 'getSettings']);
+        Route::put('/settings', [UserController::class, 'updateSettings']);
     });
 });
 

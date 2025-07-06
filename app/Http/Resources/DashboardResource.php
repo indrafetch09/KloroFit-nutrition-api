@@ -16,18 +16,12 @@ class DashboardResource extends JsonResource
                 'fat' => $this['goal']?->fat,
                 'carbs' => $this['goal']?->carbs,
             ],
-            'summary' => [
-                'calories' => $this['summary']?->total_calories ?? 0,
-                'protein' => $this['summary']?->total_protein ?? 0,
-                'fat' => $this['summary']?->total_fat ?? 0,
-                'carbs' => $this['summary']?->total_carbs ?? 0,
-                'burned' => $this['summary']?->calories_burned ?? 0,
-            ],
+            'summary' => new SummaryResource($this['summary']),
             'foods' => [
-                'breakfast' => FoodResource::collection($this['foods']['breakfast'] ?? []),
-                'lunch' => FoodResource::collection($this['foods']['lunch'] ?? []),
-                'dinner' => FoodResource::collection($this['foods']['dinner'] ?? []),
-                'snack' => FoodResource::collection($this['foods']['snack'] ?? []),
+                'breakfast' => FoodResource::collection($this['foods']->get('breakfast', collect())),
+                'lunch' => FoodResource::collection($this['foods']->get('lunch', collect())),
+                'dinner' => FoodResource::collection($this['foods']->get('dinner', collect())),
+                'snack' => FoodResource::collection($this['foods']->get('snack', collect())),
             ],
             'activities' => ActivityResource::collection($this['activities']),
         ];

@@ -54,6 +54,7 @@ class FoodController extends Controller
 
         // Validasi manual
         $validator = Validator::make($request->all(), [
+            'user_id' => Auth::user(),
             'nutrition_libraries_id' => 'required|exists:nutrition_libraries,id',
             'portion_grams' => 'nullable|numeric|min:1',
             'meal_type' => MealType::rules(),

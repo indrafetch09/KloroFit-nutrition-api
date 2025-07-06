@@ -13,12 +13,14 @@ class ActivityResource extends JsonResource
             'id' => $this->id,
             'user_id' => $this->user_id,
             'name' => $this->name,
-            'activity_date' => $this->activity_date->toDateString(), // Format Y-m-d
-            'duration' => $this->duration_minutes, // Duration in minutes
-            'duration' => $this->duration_minutes, // Duration in minutes
+            'created_at' => $this->created_at ?
+                (is_string($this->created_at) ? $this->created_at : $this->created_at->toDateTimeString()) : null,
+            'duration' => $this->duration_minutes,
             'distance' => $this->distance,
             'calories_burned' => $this->calories_burned,
-            'created_at' => $this->created_at->toDateTimeString(),
+            'activity_date' => $this->activity_date ?
+                (is_string($this->activity_date) ? $this->activity_date : $this->activity_date->toDateString()) : null,
+
         ];
     }
 }

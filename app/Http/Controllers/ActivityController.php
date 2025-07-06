@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Activity;
+use App\Enums\ActivityType;
+use Illuminate\Http\Request;
 use App\Services\SummaryService;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\ActivityRequest;
 use App\Http\Resources\ActivityResource;
+use Illuminate\Support\Facades\Validator;
 
 class ActivityController extends Controller
 {
@@ -27,35 +29,55 @@ class ActivityController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Activities fetched successfully',
-            'data' => new ActivityResource($activities),
+            'data' => ActivityResource::collection($activities),
         ]);
     }
 
-    public function store(ActivityRequest $request)
+    public function store(Request $request)
     {
-        $data = $request->validated();
         $user = Auth::user();
-        $data['user_id'] = Auth::id();
 
         if (!$user) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized.'
+                'message' => 'Unauthorized.',
             ], 401);
         }
 
-        $activity = Activity::create($data);
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'activity_date' => 'required|date|date_format:Y-m-d',
+            'type' => ActivityType::rules(),
+            'duration_minutes' => 'required|numeric|min:1|max:1440',
+            'distance' => 'nullable|numeric|min:0',
+            'calories_burned' => 'required|numeric|min:0',
+            'created_at' => 'nullable|date_format:Y-m-d H:i:s'
+        ]);
 
-        SummaryService::updateUserSummary(Auth::id(), $data['activity_date']);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $data = $validator->validated();
+        $data['user_id'] = $user->id;
+
+        $food = Activity::create($data);
+
+        // Update summary harian
+        SummaryService::updateUserSummary($user->id, $data['activity_date']);
 
         return response()->json([
             'success' => true,
-            'message' => 'Activity added & summary updated',
-            'data' => $activity,
-        ]);
+            'message' => 'Activity added and summary updated.',
+            'data' => $food,
+        ], 201);
     }
 
-    public function update($id, ActivityRequest $request)
+    public function update($id, Request $request)
     {
         $activity = Activity::where('user_id', Auth::id())->findOrFail($id);
         $oldDate = $activity->activity_date;
