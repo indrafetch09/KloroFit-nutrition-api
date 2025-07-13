@@ -109,7 +109,9 @@ class SummaryService
             'total_calories' => $summaryData['total_calories']
         ]);
     }
-
+    /**
+     * Ambil data goal dari user berdasarkan tanggal tertentu
+     */
     public static function getUserGoalByDate(int $userId, string $date): ?Goal
     {
         return Goal::where('user_id', $userId)

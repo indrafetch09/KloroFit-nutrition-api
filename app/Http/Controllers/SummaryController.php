@@ -14,7 +14,7 @@ class SummaryController extends Controller
         $userId = Auth::id();
 
         // Pastikan summary up-to-date
-        SummaryService::updateUserSummary($userId, $date);
+        SummaryService::getUserSummary($userId, $date);
 
         $summary = Summary::where('user_id', $userId)
             ->where('date', $date)
@@ -42,6 +42,21 @@ class SummaryController extends Controller
         return response()->json([
             'success' => true,
             'data' => $summary ? new SummaryResource($summary) : null,
+        ]);
+    }
+
+    public function destroy($date)
+    {
+        $userId = Auth::id();
+
+        // Hapus summary untuk user dan tanggal tertentu
+        Summary::where('user_id', $userId)
+            ->where('date', $date)
+            ->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Summary deleted successfully',
         ]);
     }
 }

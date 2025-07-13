@@ -7,7 +7,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class SummaryResource extends JsonResource
 {
-    public function toArray(Request $request): array
+    public function food(Request $request): array
     {
         return [
             'date' => $this->date->toDateString(),
@@ -19,6 +19,13 @@ class SummaryResource extends JsonResource
             'lunch_calories' => round($this->lunch_calories, 2),
             'dinner_calories' => round($this->dinner_calories, 2),
             'snack_calories' => round($this->snack_calories, 2),
+        ];
+    }
+
+    public function activity(Request $request): array
+    {
+        return [
+            'date' => $this->date->toDateString(),
             'activity_calories_burned' => round($this->activity_calories_burned, 2),
         ];
     }

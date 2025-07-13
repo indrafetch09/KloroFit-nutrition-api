@@ -24,11 +24,6 @@ class ActivityRequest extends FormRequest
             'calories_burned' => ['nullable', 'numeric', 'min:0'],
         ];
 
-        if (request()->isMethod('POST')) {
-            return array_merge($common, [
-                'name' => ['required', 'string', 'max:100'],
-            ]);
-        }
 
         if (request()->isMethod('PUT')) {
             return array_merge($common, [

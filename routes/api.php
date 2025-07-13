@@ -38,9 +38,11 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('nutrition-libraries', NutritionLibraryController::class)->only(['index', 'show']);
 
         // Set goals
-        Route::get('/goal', [GoalController::class, 'show']);
-        Route::post('/set-goal', [GoalController::class, 'store']);
-        Route::put('/upd-goal', [GoalController::class, 'update']);
+        Route::prefix('goals')->group(function () {
+            Route::get('/', [GoalController::class, 'show']);
+            Route::post('/set', [GoalController::class, 'store']);
+            Route::put('/{id}', [GoalController::class, 'update']);
+        });
 
         // Food tracking
         Route::prefix('foods')->group(function () {
@@ -58,8 +60,10 @@ Route::prefix('v1')->group(function () {
             Route::delete('/{id}', [ActivityController::class, 'destroy']);
         });
 
-        // DoSummary
-        Route::get('/summary/{date}', [SummaryController::class, 'show']);
+        // show summary in the app
+        Route::post('/summary/{date}', [SummaryController::class, 'show']);
+        // Do Summary when you click save button on flutter
+        Route::get('/summary/{date}', [SummaryController::class, 'update']);
 
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'show']);
