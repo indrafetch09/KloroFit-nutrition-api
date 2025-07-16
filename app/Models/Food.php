@@ -12,7 +12,6 @@ class Food extends Model
     protected $fillable = [
         'user_id',
         'nutrition_libraries_id',
-        'portion_grams',
         'meal_type',
         'date'
     ];

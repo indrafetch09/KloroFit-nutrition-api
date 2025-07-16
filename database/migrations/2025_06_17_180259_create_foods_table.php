@@ -13,7 +13,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('nutrition_library_id')->constrained('nutrition_libraries_id')->onDelete('cascade');
-            $table->decimal('portion_grams', 8, 2)->default(100); // Default portion size is 100 grams
             $table->enum('meal_type', ['breakfast', 'lunch', 'dinner', 'snack']);
             $table->date('date');
             $table->timestamps();
