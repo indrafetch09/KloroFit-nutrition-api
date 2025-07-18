@@ -32,10 +32,10 @@ class NutritionLibraryController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string',
-            'calories_per_100g' => 'required|numeric',
-            'fat_per_100g' => 'required|numeric',
-            'protein_per_100g' => 'required|numeric',
-            'carbs_per_100g' => 'required|numeric',
+            'calories' => 'required|numeric',
+            'fat' => 'required|numeric',
+            'protein' => 'required|numeric',
+            'carbs' => 'required|numeric',
             'is_verified' => 'boolean'
         ]);
 
@@ -49,10 +49,10 @@ class NutritionLibraryController extends Controller
 
         $data = $request->validate([
             'name' => 'string',
-            'calories_per_100g' => 'numeric',
-            'fat_per_100g' => 'numeric',
-            'protein_per_100g' => 'numeric',
-            'carbs_per_100g' => 'numeric',
+            'calories' => 'numeric',
+            'fat' => 'numeric',
+            'protein' => 'numeric',
+            'carbs' => 'numeric',
             'is_verified' => 'boolean'
         ]);
 
