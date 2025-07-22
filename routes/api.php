@@ -71,7 +71,11 @@ Route::prefix('v1')->group(function () {
         // Profile
         Route::get('/profile', [UserController::class, 'profile']);
         Route::put('/profile', [UserController::class, 'updateProfile']);
+
+        // password
         Route::put('/password', [UserController::class, 'updatePassword']);
+
+        // settings
         Route::get('/settings', [UserController::class, 'getSettings']);
         Route::put('/settings', [UserController::class, 'updateSettings']);
     });

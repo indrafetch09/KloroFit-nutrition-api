@@ -6,30 +6,24 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('goals', function (Blueprint $table) {
+        Schema::create('summaries_activities', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->date('date');
-            $table->integer('calories');
-            $table->integer('carbs');
-            $table->integer('protein');
-            $table->integer('fat');
+            $table->integer('calories_burned');
+            $table->integer('activity_count')->default(0);
+            $table->integer('duration_minutes')->default(0);
             $table->timestamps();
 
-            $table->unique(['user_id', 'date']); // 1 goal per hari per user
+            $table->unique(['user_id', 'date']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
+
     public function down(): void
     {
-        Schema::dropIfExists('goals');
+        Schema::dropIfExists('summaries_activities');
     }
 };

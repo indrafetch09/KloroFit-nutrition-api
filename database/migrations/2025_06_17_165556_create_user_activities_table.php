@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('activities', function (Blueprint $table) {
+        Schema::create('user_activities', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('name', 100);
@@ -22,8 +22,8 @@ return new class extends Migration
             $table->integer('calories_burned');
             $table->timestamp('created_at')->useCurrent();
 
-    //      $table->timestamps(); // Jangan pakai kalau tidak ada `updated_at`
-});
+            //      $table->timestamps(); // Jangan pakai kalau tidak ada `updated_at`
+        });
     }
 
     /**
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('activities');
+        Schema::dropIfExists('user_activities');
     }
 };
