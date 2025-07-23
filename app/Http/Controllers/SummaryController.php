@@ -2,61 +2,40 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\SummaryResource;
 use App\Models\Summary;
+use SummaryActivityService;
 use App\Services\SummaryService;
+use App\Services\SummaryFoodService;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\SummaryResource;
+use Illuminate\Support\Facades\Request;
 
 class SummaryController extends Controller
 {
-    public function show($date)
-    {
-        $userId = Auth::id();
 
-        // Pastikan summary up-to-date
-        SummaryService::getUserSummary($userId, $date);
-
-        $summary = Summary::where('user_id', $userId)
-            ->where('date', $date)
-            ->where('type', 'food')
-            ->first();
-
-        return response()->json([
-            'success' => true,
-            'data' => $summary ? new SummaryResource($summary) : null,
-
-        ]);
+    public function __construct(
+        SummaryFoodService $foodService,
+        SummaryActivityService $activityService
+    ) {
+        $this->foodService = $foodService;
+        $this->activityService = $activityService;
     }
-
-    public function update($date)
+    public function generate(Request $request)
     {
-        $userId = Auth::id();
-
-        // Pastikan summary up-to-date
-        SummaryService::updateUserSummary($userId, $date);
-
-        $summary = Summary::where('user_id', $userId)
-            ->where('date', $date)
-            ->first();
-
-        return response()->json([
-            'success' => true,
-            'data' => $summary ? new SummaryResource($summary) : null,
+        $request->validate([
+            'date' => 'required|date'
         ]);
-    }
 
-    public function destroy($date)
-    {
-        $userId = Auth::id();
+        $userId = auth()->id(); // dari token
+        $date = $request->input('date');
 
-        // Hapus summary untuk user dan tanggal tertentu
-        Summary::where('user_id', $userId)
-            ->where('date', $date)
-            ->delete();
+        // Jalankan kalkulasi summary makanan & aktivitas
+        $this->foodService->generate($userId, $date);
+        $this->activityService->generate($userId, $date);
 
         return response()->json([
-            'success' => true,
-            'message' => 'Summary deleted successfully',
+            'message' => 'Summary generated successfully.',
+            'date' => $date
         ]);
     }
 }

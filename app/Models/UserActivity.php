@@ -4,9 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Activity extends Model
+class UserActivity extends Model
 {
     public $timestamps = false;
+
     protected $table = 'activities';
 
     protected $fillable = [

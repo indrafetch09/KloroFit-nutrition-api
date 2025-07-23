@@ -3,16 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Activity;
+use App\Services\SummaryService;
+use App\Http\Resources\ActivityResource;
 use App\Enums\ActivityType;
 use Illuminate\Http\Request;
-use App\Services\SummaryService;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Resources\ActivityResource;
 use Illuminate\Support\Facades\Validator;
 
 class ActivityController extends Controller
 {
-    public function show()
+    public function index()
     {
         $activities = Activity::where('user_id', Auth::id())
             ->orderBy('activity_date', 'desc')
@@ -68,7 +68,7 @@ class ActivityController extends Controller
         $food = Activity::create($data);
 
         // Update summary harian
-        SummaryService::updateUserSummary($user->id, $data['activity_date']);
+        SummaryService::generate($user->id, $data['activity_date']);
 
         return response()->json([
             'success' => true,
@@ -85,15 +85,15 @@ class ActivityController extends Controller
         $activity->update($request->validated());
         $newDate = $request->activity_date ?? $oldDate;
 
-        SummaryService::updateUserSummary(Auth::id(), $oldDate);
+        SummaryService::generate(Auth::id(), $oldDate);
 
         if ($oldDate !== $newDate) {
-            SummaryService::updateUserSummary(Auth::id(), $newDate);
+            SummaryService::generate(Auth::id(), $newDate);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Activity updated & summary updateUserSummaryd',
+            'message' => 'Activity updated & summary generated',
             'data' => $activity,
         ]);
     }
@@ -104,7 +104,7 @@ class ActivityController extends Controller
         $date = $activity->activity_date;
         $activity->delete();
 
-        SummaryService::updateUserSummary(Auth::id(), $date);
+        SummaryService::generate(Auth::id(), $date);
 
         return response()->json([
             'success' => true,

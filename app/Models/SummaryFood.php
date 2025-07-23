@@ -4,20 +4,23 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Summary extends Model
+class SummaryFood extends Model
 {
-    protected $table = 'summaries';
+    protected $table = 'summaries_foods';
 
     protected $fillable = [
         'user_id',
-        'type',
         'date',
         'calories',
         'fat',
         'protein',
         'carbs',
-        'activity_calories',
-        'activity_minutes'
+        'breakfast_calories',
+        'lunch_calories',
+        'dinner_calories',
+        'snack_calories',
+        'created_at',
+        'updated_at',
     ];
 
     protected $casts = [
@@ -27,11 +30,6 @@ class Summary extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function getTotalCaloriesAttribute()
-    {
-        return $this->calories + $this->activity_calories;
     }
 
     public function getTotalFatAttribute()
