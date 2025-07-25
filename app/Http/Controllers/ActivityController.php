@@ -2,19 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Activity;
-use App\Services\SummaryService;
+use App\Models\UserActivity;
+use App\Services\SummaryActivityService;
 use App\Http\Resources\ActivityResource;
 use App\Enums\ActivityType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use PhpParser\Node\Stmt\Global_;
+use SummaryActivityService as GlobalSummaryActivityService;
 
 class ActivityController extends Controller
 {
     public function index()
     {
-        $activities = Activity::where('user_id', Auth::id())
+        $activities = UserActivity::where('user_id', Auth::id())
             ->orderBy('activity_date', 'desc')
             ->get();
 
@@ -65,10 +67,10 @@ class ActivityController extends Controller
         $data = $validator->validated();
         $data['user_id'] = $user->id;
 
-        $food = Activity::create($data);
+        $food = UserActivity::create($data);
 
         // Update summary harian
-        SummaryService::generate($user->id, $data['activity_date']);
+        GlobalSummaryActivityService::recalculateSummary($user->id, $data['activity_date']);
 
         return response()->json([
             'success' => true,
@@ -79,32 +81,32 @@ class ActivityController extends Controller
 
     public function update($id, Request $request)
     {
-        $activity = Activity::where('user_id', Auth::id())->findOrFail($id);
+        $activity = UserActivity::where('user_id', Auth::id())->findOrFail($id);
         $oldDate = $activity->activity_date;
 
         $activity->update($request->validated());
         $newDate = $request->activity_date ?? $oldDate;
 
-        SummaryService::generate(Auth::id(), $oldDate);
+        GlobalSummaryActivityService::recalculateSummary(Auth::id(), $oldDate);
 
         if ($oldDate !== $newDate) {
-            SummaryService::generate(Auth::id(), $newDate);
+            GlobalSummaryActivityService::recalculateSummary(Auth::id(), $newDate);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Activity updated & summary generated',
+            'message' => 'Activity updated',
             'data' => $activity,
         ]);
     }
 
     public function destroy($id)
     {
-        $activity = Activity::where('user_id', Auth::id())->findOrFail($id);
+        $activity = UserActivity::where('user_id', Auth::id())->findOrFail($id);
         $date = $activity->activity_date;
         $activity->delete();
 
-        SummaryService::generate(Auth::id(), $date);
+        GlobalSummaryActivityService::recalculateSummary(Auth::id(), $date);
 
         return response()->json([
             'success' => true,

@@ -9,14 +9,14 @@ use Illuminate\Support\Facades\Auth;
 class GoalController extends Controller
 {
     // GET /goals → ambil goal user
-    public function show()
+    public function index()
     {
         $goal = Goal::where('user_id', Auth::id())->first();
 
         if (!$goal) {
             return response()->json([
                 'success' => false,
-                'message' => 'Goal not set',
+                'message' => 'Goal empty',
                 'data' => null
             ], 404);
         }
@@ -41,7 +41,7 @@ class GoalController extends Controller
         if (Goal::where('user_id', Auth::id())->exists()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Goal already exists. Use update instead.',
+                'message' => 'Goal anda sudah ada.',
             ], 409);
         }
 
@@ -55,7 +55,7 @@ class GoalController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Goal set successfully',
+            'message' => 'Goal anda berhasil ditambahkan',
             'data' => $goal
         ]);
     }
@@ -83,7 +83,7 @@ class GoalController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Goal updated',
+            'message' => 'Goal anda berhasil diperbarui',
             'data' => $goal
         ]);
     }

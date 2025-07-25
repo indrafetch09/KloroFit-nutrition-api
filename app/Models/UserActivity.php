@@ -8,7 +8,7 @@ class UserActivity extends Model
 {
     public $timestamps = false;
 
-    protected $table = 'activities';
+    protected $table = 'user_activities';
 
     protected $fillable = [
         'user_id',

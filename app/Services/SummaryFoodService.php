@@ -4,11 +4,10 @@ namespace App\Services;
 
 use App\Models\UserFood;
 use App\Models\SummaryFood;
-use Illuminate\Support\Facades\DB;
 
 class SummaryFoodService
 {
-    public function recalculateSummary(int $userId, string $date): void
+    public static function recalculateSummary(int $userId, string $date): void
     {
 
         // Ambil data makanan dari data user

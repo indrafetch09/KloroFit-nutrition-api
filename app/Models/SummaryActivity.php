@@ -24,4 +24,9 @@ class SummaryActivity extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function getTotalCalorieAttribute()
+    {
+        return $this->calories_burned;
+    }
 }

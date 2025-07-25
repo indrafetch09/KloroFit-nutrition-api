@@ -10,7 +10,8 @@ use App\Http\Controllers\SummaryController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NutritionLibraryController;
-
+use App\Http\Controllers\SummaryFoodController;
+use App\Models\SummaryFood;
 
 Route::prefix('v1')->group(function () {
     // Auth routes
@@ -39,9 +40,9 @@ Route::prefix('v1')->group(function () {
 
         // Set goals
         Route::prefix('goals')->group(function () {
-            Route::get('/', [GoalController::class, 'show']);
-            Route::post('/set', [GoalController::class, 'store']);
-            Route::put('/{id}', [GoalController::class, 'update']);
+            Route::get('/', [GoalController::class, 'index']); // <- untuk GET data goal dari user_id 
+            Route::post('/set', [GoalController::class, 'store']); // <- untuk set goal
+            Route::put('/{id}', [GoalController::class, 'update']); // <- untuk update goal
         });
 
         // Food tracking
@@ -59,11 +60,6 @@ Route::prefix('v1')->group(function () {
             Route::put('/{id}', [ActivityController::class, 'update']);
             Route::delete('/{id}', [ActivityController::class, 'destroy']);
         });
-
-        // show summary in the app
-        Route::post('/summary/{date}', [SummaryController::class, 'show']);
-        // Do Summary when you click save button on flutter
-        Route::get('/summary/{date}', [SummaryController::class, 'update']);
 
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'show']);

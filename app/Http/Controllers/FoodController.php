@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\MealType;
 use App\Models\Food;
-use App\Services\SummaryService;
+use App\Services\SummaryFoodService;
 use App\Http\Resources\FoodResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Validator;
 
 class FoodController extends Controller
 {
-    public function show()
+    public function index()
     {
         $foods = Food::where('user_id', Auth::id())
             ->orderBy('date', 'desc')
@@ -66,13 +66,12 @@ class FoodController extends Controller
             ], 422);
         }
 
-        $data = $validator->validated();
         $data['user_id'] = $user->id;
 
         $food = Food::create($data);
 
         // Update summary harian
-        SummaryService::updateUserSummary($user->id, $data['date']);
+        SummaryFoodService::recalculateSummary($user->id, $data['date']);
 
         return response()->json([
             'success' => true,
@@ -111,7 +110,7 @@ class FoodController extends Controller
 
         // $food = Food::create($data);
 
-        // SummaryService::updateUserSummary($user->id, $data['date']);
+        // SummaryFoodService::recalculateSummary($user->id, $data['date']);
 
         // return response()->json([
         //     'success' => true,
@@ -130,9 +129,9 @@ class FoodController extends Controller
 
         $newDate = $request->date ?? $oldDate;
 
-        SummaryService::updateUserSummary(Auth::id(), $oldDate);
+        SummaryFoodService::recalculateSummary(Auth::id(), $oldDate);
         if ($oldDate !== $newDate) {
-            SummaryService::updateUserSummary(Auth::id(), $newDate);
+            SummaryFoodService::recalculateSummary(Auth::id(), $newDate);
         }
 
         return response()->json([
@@ -148,7 +147,7 @@ class FoodController extends Controller
         $date = $food->date;
         $food->delete();
 
-        SummaryService::updateUserSummary(Auth::id(), $date);
+        SummaryFoodService::recalculateSummary(Auth::id(), $date);
 
         return response()->json([
             'success' => true,

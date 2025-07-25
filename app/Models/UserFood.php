@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserFood extends Model
 {
-    protected $table = 'foods';
+    protected $table = 'user_foods';
 
     protected $fillable = [
         'user_id',
@@ -16,9 +16,10 @@ class UserFood extends Model
         'date'
     ];
 
-    protected $casts = [
-        'date' => 'date',
-    ];
+    public function getFormattedDateAttribute()
+    {
+        return $this->date ? $this->date->format('Y-m-d') : null;
+    }
 
     public function user(): BelongsTo
     {
