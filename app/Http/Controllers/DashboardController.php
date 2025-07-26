@@ -2,36 +2,36 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Summary;
-use App\Models\Goal;
 use App\Models\Food;
-use App\Models\Activity;
-use App\Http\Resources\DashboardResource;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Goal;
+use App\Models\SummaryFood;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\DashboardResource;
+use App\Models\SummaryActivity;
 
 class DashboardController extends Controller
 {
     public function show(Request $request)
     {
-        $userId = Auth::id();
+        $user = Auth::id();
         $date = $request->query('date', now()->toDateString());
 
-        $summary = Summary::where('user_id', $userId)->where('date', $date)->first();
-        $goal = Goal::where('user_id', $userId)->first();
+        $foodsummary = SummaryFood::where('user_id', $user)->where('date', $date)->first();
+        $goal = Goal::where('user_id', $user)->first();
 
         $foods = Food::with('nutritionLibrary')
-            ->where('user_id', $userId)
+            ->where('user_id', $user)
             ->where('date', $date)
             ->get()
             ->groupBy('meal_type');
 
-        $activities = Activity::where('user_id', $userId)
+        $activities = SummaryActivity::where('user_id', $user)
             ->where('activity_date', $date)
             ->get();
 
         return new DashboardResource([
-            'summary' => $summary,
+            'summary' => $foodsummary,
             'goal' => $goal,
             'foods' => $foods,
             'activities' => $activities,

@@ -11,6 +11,7 @@ class Goal extends Model
 
     protected $fillable = [
         'user_id',
+        'date',
         'calories',
         'carbs',
         'protein',
@@ -18,9 +19,4 @@ class Goal extends Model
         'created_at',
         'updated_at',
     ];
-
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
 }

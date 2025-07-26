@@ -16,8 +16,8 @@ class NutritionLibraryResource extends JsonResource
             'fat' => $this->fat,
             'protein' => $this->protein,
             'carbs' => $this->carbs,
-            'is_verified' => $this->is_verified,
-            'created_at' => $this->created_at?->toDateTimeString(),
+            // 'is_verified' => $this->is_verified,
+            // 'created_at' => $this->created_at?->toDateTimeString(),
         ];
     }
 }

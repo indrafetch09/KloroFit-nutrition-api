@@ -6,12 +6,12 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FoodController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\SummaryController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NutritionLibraryController;
+use App\Http\Controllers\SummaryController;
 use App\Http\Controllers\SummaryFoodController;
-use App\Models\SummaryFood;
+use App\Models\NutritionLibrary;
 
 Route::prefix('v1')->group(function () {
     // Auth routes
@@ -36,7 +36,9 @@ Route::prefix('v1')->group(function () {
         Route::post('/refresh-token', [AuthController::class, 'refreshTokens']);
 
         // Nutrition Library search
-        Route::apiResource('nutrition-libraries', NutritionLibraryController::class)->only(['index', 'show']);
+        Route::prefix('nutrition-libraries')->group(function () {
+            Route::get('/search', [NutritionLibraryController::class, 'searchByName']);
+        });
 
         // Set goals
         Route::prefix('goals')->group(function () {

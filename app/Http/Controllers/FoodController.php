@@ -79,44 +79,37 @@ class FoodController extends Controller
             'data' => $food,
         ], 201);
 
-        // $validated = $request->validated();
-        // $user = Auth::user();
+        $validated = $request->validated();
+        $user = Auth::user();
 
-        // if (!$user) {
-        //     return response()->json([
-        //         'success' => false,
-        //         'message' => 'Unauthorized.'
-        //     ], 401);
-        // }
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized.'
+            ], 401);
+        }
 
-        // if (!$user->goal || $user->goal->calories <= 0) {
-        //     return response()->json([
-        //         'success' => false,
-        //         'message' => 'Please set your goal first.'
-        //     ], 403);
-        // }
+        $data['portion_grams'] = $data['portion_grams'] ?? 100;
 
-        // $data['portion_grams'] = $data['portion_grams'] ?? 100;
+        $food = Food::create([
+            'user_id' => Auth::id(),
+            'nutrition_libraries_id' => $validated['nutrition_library_id'],
+            'meal_type' => $validated['meal_type'],
+            'date' => $validated['date'],
+            'portion_grams' => $validated['portion_grams'] ?? null,
+        ]);
 
-        // $food = Food::create([
-        //     'user_id' => Auth::id(),
-        //     'nutrition_libraries_id' => $validated['nutrition_library_id'],
-        //     'meal_type' => $validated['meal_type'],
-        //     'date' => $validated['date'],
-        //     'portion_grams' => $validated['portion_grams'] ?? null,
-        // ]);
+        return response()->json(['message' => 'Food added', 'data' => $food], 201);
 
-        // return response()->json(['message' => 'Food added', 'data' => $food], 201);
+        $food = Food::create($data);
 
-        // $food = Food::create($data);
+        SummaryFoodService::recalculateSummary($user->id, $data['date']);
 
-        // SummaryFoodService::recalculateSummary($user->id, $data['date']);
-
-        // return response()->json([
-        //     'success' => true,
-        //     'message' => 'Food added and summary updated.',
-        //     'data' => new FoodResource($food),
-        // ], 201);
+        return response()->json([
+            'success' => true,
+            'message' => 'Food added and summary updated.',
+            'data' => new FoodResource($food),
+        ], 201);
     }
 
 
