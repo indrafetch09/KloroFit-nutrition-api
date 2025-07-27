@@ -13,15 +13,14 @@ class FoodService
         $this->summaryService = $summaryService;
     }
 
-    public function addFood($userId, $nutritionId, $quantity, $mealType, $date)
+    public function addFood($userId, $nutritionId, $mealType, $date)
     {
         NutritionLibrary::findOrFail($nutritionId);
 
         // Simpan ke user_foods
         UserFood::create([
             'user_id' => $userId,
-            'nutrition_id' => $nutritionId,
-            'quantity' => $quantity,
+            'nutrition_library_id' => $nutritionId,
             'meal_type' => $mealType,
             'date' => $date,
         ]);

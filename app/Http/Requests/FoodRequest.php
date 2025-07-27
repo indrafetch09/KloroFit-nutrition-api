@@ -2,12 +2,17 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\FoodType;
 use App\Enums\MealType;
 use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class FoodRequest extends FormRequest
 {
+    /**
+     * @property \App\Models\User $user
+     */
+
     public function authorize(): bool
     {
         return auth('sanctum')->check(); // Pastikan user login
@@ -16,7 +21,7 @@ class FoodRequest extends FormRequest
     public function rules(): array
     {
         $common = [
-            'meal_type' => ['required', Rule::in(MealType::values())],
+            'meal_type' => ['required', Rule::in(FoodType::values())],
             'date' => ['required', 'date', 'before_or_equal:today'],
         ];
 
@@ -28,7 +33,7 @@ class FoodRequest extends FormRequest
 
         if (request()->isMethod('PUT')) {
             return array_merge([
-                'meal_type' => ['sometimes', Rule::in(MealType::values())],
+                'meal_type' => ['sometimes', Rule::in(FoodType::values())],
                 'date' => ['sometimes', 'date', 'before_or_equal:today'],
                 'nutrition_library_id' => ['sometimes', 'exists:nutrition_libraries,id'],
             ]);

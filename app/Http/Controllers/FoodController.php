@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Enums\MealType;
-use App\Models\Food;
-use App\Services\SummaryFoodService;
-use App\Http\Resources\FoodResource;
-use Illuminate\Support\Facades\Auth;
+use App\Models\UserFood;
 use Illuminate\Http\Request;
+use App\Http\Requests\FoodRequest;
+use App\Http\Resources\FoodResource;
+use App\Services\SummaryFoodService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -15,128 +16,99 @@ class FoodController extends Controller
 {
     public function index()
     {
-        $foods = Food::where('user_id', Auth::id())
+        $foods = UserFood::where('user_id', Auth::id())
             ->orderBy('date', 'desc')
             ->get();
 
         if ($foods->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'You have not added any foods yet',
+                'message' => 'Kamu belum menambahkan makanan pada list.',
                 'data' => null
             ], 404);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Foods fetched successfully',
+            'message' => 'List makanan berhasil di-fetch.',
             'data' => FoodResource::collection($foods),
         ]);
     }
 
-    public function store(Request $request)
+    public function store(FoodRequest $request)
     {
-        $user = Auth::user();
+        $user = $request->user();
 
-        if (!$user) {
+        $data = $request->validated();
+        $data['user_id'] = $user->id;
+        $data['portion_grams'] = $data['portion_grams'] ?? 100;
+
+        $food = UserFood::create($data);
+
+        SummaryFoodService::recalculateSummary($user->id, $data['date']);
+
+        return response()->json([
+            'message' => 'Makanan berhasil ditambahkan.',
+            'data' => new FoodResource($food),
+        ], 201);
+    }
+
+    public function update(FoodRequest $request, UserFood $userFood)
+    {
+        $user = $request->user();
+
+        // Pastikan hanya user pemilik data yang bisa mengupdate
+        if ($user->id !== $userFood->user_id) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized.',
-            ], 401);
-        }
-
-        if (!$user->goal || $user->goal->calories <= 0) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Please set your goal first.',
+                'message' => 'Ups, ada yang salah..',
             ], 403);
         }
 
-        // Validasi manual
-        $validator = Validator::make($request->all(), [
-            'nutrition_libraries_id' => 'required|exists:nutrition_libraries,id',
-            'meal_type' => MealType::rules(),
-        ]);
+        $data = $request->validated();
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error.',
-                'errors' => $validator->errors(),
-            ], 422);
+        // Jika tidak ada portion_grams dikirim, jangan overwrite jadi null
+        if (!array_key_exists('portion_grams', $data)) {
+            unset($data['portion_grams']);
         }
 
-        $data['user_id'] = $user->id;
+        $userFood->update($data);
 
-        $food = Food::create($data);
-
-        // Update summary harian
-        SummaryFoodService::recalculateSummary($user->id, $data['date']);
+        // Rehitung summary harian jika ada perubahan pada date
+        SummaryFoodService::recalculateSummary($user->id, $userFood->date);
 
         return response()->json([
             'success' => true,
-            'message' => 'Food added and summary updated.',
-            'data' => $food,
-        ], 201);
-
-        $validated = $request->validated();
-        $user = Auth::user();
-
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized.'
-            ], 401);
-        }
-
-        $data['portion_grams'] = $data['portion_grams'] ?? 100;
-
-        $food = Food::create([
-            'user_id' => Auth::id(),
-            'nutrition_libraries_id' => $validated['nutrition_library_id'],
-            'meal_type' => $validated['meal_type'],
-            'date' => $validated['date'],
-            'portion_grams' => $validated['portion_grams'] ?? null,
-        ]);
-
-        return response()->json(['message' => 'Food added', 'data' => $food], 201);
-
-        $food = Food::create($data);
-
-        SummaryFoodService::recalculateSummary($user->id, $data['date']);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Food added and summary updated.',
-            'data' => new FoodResource($food),
-        ], 201);
-    }
-
-
-    public function update($id, Request $request)
-    {
-        $food = Food::where('user_id', Auth::id())->findOrFail($id);
-        $oldDate = $food->date;
-
-        $food->update($request->validated());
-
-        $newDate = $request->date ?? $oldDate;
-
-        SummaryFoodService::recalculateSummary(Auth::id(), $oldDate);
-        if ($oldDate !== $newDate) {
-            SummaryFoodService::recalculateSummary(Auth::id(), $newDate);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Food updated & summary refreshed.',
-            'data' => new FoodResource($food),
+            'message' => 'List makanan berhasil diperbarui.',
+            'data' => new FoodResource($userFood),
         ]);
     }
+
+
+    // public function update($id, Request $request)
+    // {
+    //     $food = UserFood::where('user_id', Auth::id())->findOrFail($id);
+    //     $oldDate = $food->date;
+
+    //     $food->update($request->validated());
+
+    //     $newDate = $request->date ?? $oldDate;
+
+    //     SummaryFoodService::recalculateSummary(Auth::id(), $oldDate);
+    //     if ($oldDate !== $newDate) {
+    //         SummaryFoodService::recalculateSummary(Auth::id(), $newDate);
+    //     }
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Food updated & summary refreshed.',
+    //         'data' => new FoodResource($food),
+    //     ]);
+    // }
 
     public function destroy($id)
     {
-        $food = Food::where('user_id', Auth::id())->findOrFail($id);
+        $food = UserFood::where('user_id', Auth::id())->findOrFail($id);
         $date = $food->date;
         $food->delete();
 
@@ -144,7 +116,7 @@ class FoodController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Food deleted & summary updated.',
+            'message' => 'Makanan berhasil dihapus.',
         ]);
     }
 }

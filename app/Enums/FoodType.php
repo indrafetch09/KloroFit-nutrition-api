@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum MealType: string
+enum FoodType: string
 {
     case BREAKFAST = 'breakfast';
     case LUNCH = 'lunch';

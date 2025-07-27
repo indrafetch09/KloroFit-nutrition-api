@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->date('date');
-            $table->integer('calories');
-            $table->integer('carbs');
-            $table->integer('protein');
-            $table->integer('fat');
+            $table->integer('calories')->default(0);
+            $table->integer('carbs')->default(0);
+            $table->integer('protein')->default(0);
+            $table->integer('fat')->default(0);
             $table->timestamps();
 
             $table->unique(['user_id', 'date']); // 1 goal per hari per user

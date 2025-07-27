@@ -11,7 +11,7 @@ class UserFood extends Model
 
     protected $fillable = [
         'user_id',
-        'nutrition_libraries_id',
+        'nutrition_library_id',
         'meal_type',
         'date'
     ];
@@ -26,28 +26,28 @@ class UserFood extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function nutritionLibrary(): BelongsTo
+    public function nutrition(): BelongsTo
     {
-        return $this->belongsTo(NutritionLibrary::class, 'nutrition_libraries_id');
+        return $this->belongsTo(NutritionLibrary::class, 'nutrition_library_id');
     }
 
     public function getCaloriesAttribute()
     {
-        return optional($this->nutritionLibrary)->calories;
+        return optional($this->nutrition)->calories;
     }
 
     public function getFatAttribute()
     {
-        return optional($this->nutritionLibrary)->fat;
+        return optional($this->nutrition)->fat;
     }
 
     public function getProteinAttribute()
     {
-        return optional($this->nutritionLibrary)->protein;
+        return optional($this->nutrition)->protein;
     }
 
     public function getCarbsAttribute()
     {
-        return optional($this->nutritionLibrary)->carbs;
+        return optional($this->nutrition)->carbs;
     }
 }

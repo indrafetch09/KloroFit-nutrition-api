@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 
 class Goal extends Model
 {
-    protected $table = 'goals';
+    use HasFactory;
 
     protected $fillable = [
         'user_id',
@@ -16,7 +17,14 @@ class Goal extends Model
         'carbs',
         'protein',
         'fat',
-        'created_at',
-        'updated_at',
     ];
+
+    protected $casts = [
+        'date' => 'date'
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

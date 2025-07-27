@@ -10,7 +10,7 @@ class FoodResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'nutrition_library_id' => $this->nutrition_library_id,
             'name' => $this->name,
             'meal_type' => $this->meal_type,
             'calories' => $this->calories,
