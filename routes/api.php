@@ -1,6 +1,5 @@
 <?php
 
-
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FoodController;
@@ -11,17 +10,14 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NutritionLibraryController;
 use App\Http\Controllers\SummaryController;
 use App\Http\Controllers\SummaryFoodController;
-use App\Models\NutritionLibrary;
-use Illuminate\Routing\RouteGroup;
 
 Route::prefix('v1')->group(function () {
     // Auth routes
     Route::get('/', function () {
         return response()->json([
             'success' => true,
-            'message' => 'Welcome to Klorofit API',
-            'data' => null
-        ]);
+            'message' => 'Welcome to Klorofit API'
+        ], 200);
     });
 
     Route::post('/register', [AuthController::class, 'register']);
@@ -41,10 +37,9 @@ Route::prefix('v1')->group(function () {
             Route::get('/search', [NutritionLibraryController::class, 'searchByName']);
         });
 
-
         // Set Goals
         Route::prefix('goals')->group(function () {
-            Route::get('/', [GoalController::class, 'index']); // Mengambil semua goals
+            // Route::get('/', [GoalController::class, 'index']); // Mengambil semua goals
             Route::get('/{date}', [GoalController::class, 'show']); // Mengambil goal spesifik by date
             Route::post('/set', [GoalController::class, 'storeOrUpdate']); // Untuk membuat/memperbarui goal harian
             Route::delete('/{date}', [GoalController::class, 'destroy']); // Menghapus goal by date
@@ -52,8 +47,9 @@ Route::prefix('v1')->group(function () {
 
         // Food tracking
         Route::prefix('foods')->group(function () {
-            Route::get('/{date}', [FoodController::class, 'index']);
-            Route::post('/set', [FoodController::class, 'store']);
+            Route::get('/', [FoodController::class, 'index']);
+            Route::get('/{id}', [FoodController::class, 'show']);
+            Route::post('/', [FoodController::class, 'store']);
             Route::put('/{id}', [FoodController::class, 'update']);
             Route::delete('/{id}', [FoodController::class, 'destroy']);
         });
@@ -67,7 +63,7 @@ Route::prefix('v1')->group(function () {
         });
 
         // Dashboard
-        Route::get('/dashboard', [DashboardController::class, 'show']);
+        Route::get('dashboard', [DashboardController::class, 'index']);
 
         // Profile
         Route::get('/profile', [UserController::class, 'profile']);

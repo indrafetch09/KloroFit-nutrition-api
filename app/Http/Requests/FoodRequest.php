@@ -2,52 +2,39 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\FoodType;
-use App\Enums\MealType;
-use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Enums\MealType;
+use Illuminate\Validation\Rule; // Import Rule
 
 class FoodRequest extends FormRequest
 {
-    /**
-     * @property \App\Models\User $user
-     */
-
     public function authorize(): bool
     {
-        return auth('sanctum')->check(); // Pastikan user login
+        return true;
     }
 
     public function rules(): array
     {
-        $common = [
-            'meal_type' => ['required', Rule::in(FoodType::values())],
-            'date' => ['required', 'date', 'before_or_equal:today'],
+        return [
+            'nutrition_library_id' => [ // <--- Ini yang baru
+                'required',
+                'integer',
+                'exists:nutrition_libraries,id' // Memastikan ID ada di tabel nutrition_libraries
+            ],
+            'meal_type' => MealType::rules(), // Pastikan aturan ini sudah ada
+            'date' => 'required|date_format:Y-m-d', // Asumsi tanggal konsumsi juga dikirim
         ];
-
-        if (request()->isMethod('POST')) {
-            return array_merge($common, [
-                'nutrition_library_id' => ['required', 'exists:nutrition_libraries,id'],
-            ]);
-        }
-
-        if (request()->isMethod('PUT')) {
-            return array_merge([
-                'meal_type' => ['sometimes', Rule::in(FoodType::values())],
-                'date' => ['sometimes', 'date', 'before_or_equal:today'],
-                'nutrition_library_id' => ['sometimes', 'exists:nutrition_libraries,id'],
-            ]);
-        }
-
-        return $common;
     }
 
     public function messages(): array
     {
         return [
-            'meal_type.in' => 'Meal type is not valid. It must be one of these types: breakfast, lunch, dinner, or snack.',
-            'date.before_or_equal' => 'Date is not valid. It must be today or earlier.',
-            'nutrition_library_id.exists' => 'The selected nutrition library does not exist.',
+            'nutrition_library_id.required' => 'ID makanan dari perpustakaan nutrisi wajib diisi.',
+            'nutrition_library_id.integer' => 'ID makanan harus berupa angka bulat.',
+            'nutrition_library_id.exists' => 'Makanan dengan ID tersebut tidak ditemukan di perpustakaan nutrisi.',
+            'meal_type.in' => 'Tipe makanan tidak valid. Pilihan: ' . implode(', ', MealType::values()) . '.',
+            'date.required' => 'Tanggal konsumsi wajib diisi.',
+            'date.date_format' => 'Format tanggal harus YYYY-MM-DD.'
         ];
     }
 }

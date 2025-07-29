@@ -25,39 +25,60 @@ class GoalController extends Controller
     public function storeOrUpdate(GoalRequest $request): JsonResponse
     {
         $validatedData = $request->validated();
-        $validatedData['user_id'] = Auth::user()->id;
+        $validatedData['user_id'] = Auth::id();
 
         $goal = $this->goalService->createOrUpdateGoal($validatedData['user_id'], $validatedData);
 
-        return (new GoalResource($goal))->response()->setStatusCode(200);
+        // Memeriksa apakah goal baru saja dibuat atau diperbarui
+        $wasCreated = $goal->wasRecentlyCreated;
+        $message = $wasCreated ? 'Goal berhasil dibuat.' : 'Goal berhasil diperbarui.';
+        $statusCode = $wasCreated ? 201 : 200;
+
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'data' => new GoalResource($goal)
+        ], $statusCode);
     }
 
     /**
      * Get a specific goal by date for the authenticated user.
      */
-    public function show(string $date, Request $request): JsonResponse
+    public function show(string $date): JsonResponse
     {
-        $goal = $this->goalService->getGoalByDate($request->user()->id, $date);
+        $goal = $this->goalService->getGoalByDate(Auth::id(), $date);
 
         if (!$goal) {
-            return response()->json(['message' => 'Goal not found for this date'], 404);
+            return response()->json([
+                'success' => false,
+                'message' => 'Goal untuk tanggal ini tidak ditemukan.'
+            ], 404);
         }
 
-        return (new GoalResource($goal))->response()->setStatusCode(200);
+        return response()->json([
+            'success' => true,
+            'data' => new GoalResource($goal)
+        ]);
     }
 
     /**
      * Delete a goal by date for the authenticated user.
      */
-    public function destroy(string $date, Request $request): JsonResponse
+    public function destroy(string $date): JsonResponse
     {
-        $goal = $this->goalService->getGoalByDate($request->user()->id, $date);
+        $goal = $this->goalService->getGoalByDate(Auth::id(), $date);
 
         if (!$goal) {
-            return response()->json(['message' => 'Goal not found for this date'], 404);
+            return response()->json([
+                'success' => false,
+                'message' => 'Goal untuk tanggal ini tidak ditemukan.'
+            ], 404);
         }
 
         $this->goalService->deleteGoal($goal);
-        return response()->json(null, 204);
+        return response()->json([
+            'success' => true,
+            'message' => 'Goal berhasil dihapus'
+        ], 200);
     }
 }

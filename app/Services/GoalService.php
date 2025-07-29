@@ -11,7 +11,10 @@ class GoalService
     public function createOrUpdateGoal(int $userId, array $data): Goal
     {
         $goal = Goal::updateOrCreate(
-            ['user_id' => $userId, 'date' => $data['date']],
+            [
+                'user_id' => $userId,
+                'date' => $data['date']
+            ],
             $data
         );
         return $goal;

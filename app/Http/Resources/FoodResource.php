@@ -10,15 +10,15 @@ class FoodResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'nutrition_library_id' => $this->nutrition_library_id,
             'name' => $this->name,
-            'meal_type' => $this->meal_type,
+            'meal_type' => $this->meal_type?->value,
             'calories' => $this->calories,
             'fat' => $this->fat,
             'protein' => $this->protein,
             'carbs' => $this->carbs,
-            'date' => $this->date->toDateString(), // Format Y-m-d
-            'created_at' => $this->created_at->toDateTimeString(),
+            'date' => $this->date->format('Y-m-d'),
+            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
+            'update_at' => $this->update_at->format('Y-m-d H:i:s'),
         ];
     }
 }

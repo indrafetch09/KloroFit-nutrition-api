@@ -2,121 +2,164 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\MealType;
-use App\Models\UserFood;
-use Illuminate\Http\Request;
 use App\Http\Requests\FoodRequest;
 use App\Http\Resources\FoodResource;
-use App\Services\SummaryFoodService;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
-
+use App\Services\FoodService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class FoodController extends Controller
 {
-    public function index()
+    protected FoodService $foodService;
+
+    public function __construct(FoodService $foodService)
     {
-        $foods = UserFood::where('user_id', Auth::id())
-            ->orderBy('date', 'desc')
-            ->get();
+        $this->foodService = $foodService;
+    }
+
+    /**
+     * Display a listing of the food (for the authenticated user).
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $foods = $this->foodService->getAllFoodsForUser($request->user()->id);
 
         if ($foods->isEmpty()) {
             return response()->json([
+                'success' => true,
+                'message' => 'Tidak ada data makanan yang ditemukan.',
+                'data' => [],
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Data makanan berhasil diambil.',
+            'data' => FoodResource::collection($foods),
+        ]);
+    }
+
+    /**
+     * Store a newly created food in storage.
+     *
+     * @param  \App\Http\Requests\FoodRequest  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function store(FoodRequest $request): JsonResponse
+    {
+        $validatedData = $request->validated();
+        $validatedData['user_id'] = $request->user()->id;
+
+        // Semua data yang dibutuhkan (nutrition_library_id, meal_type, date) sudah ada di $validatedData
+        // yang datang dari FoodRequest.
+        try {
+            $food = $this->foodService->createFood($validatedData);
+        } catch (\Exception $e) { // Bad Request jika library item tidak ditemukan
+            return response()->json([
                 'success' => false,
-                'message' => 'Kamu belum menambahkan makanan pada list.',
-                'data' => null
+                'message' => $e->getMessage()
+            ], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Data makanan berhasil ditambahkan.',
+            'data' => new FoodResource($food)
+        ], 201);
+    }
+
+    /**
+     * Display the specified food.
+     *
+     * @param  int  $id
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show(int $id, Request $request): JsonResponse
+    {
+        $food = $this->foodService->getFoodById($id);
+
+        if (!$food || $food->user_id !== $request->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data makanan tidak ditemukan atau kamu belum menambahkannya.'
             ], 404);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'List makanan berhasil di-fetch.',
-            'data' => FoodResource::collection($foods),
+            'message' => 'Data makanan berhasil diambil.',
+            'data' => new FoodResource($food)
         ]);
     }
 
-    public function store(FoodRequest $request)
+    /**
+     * Update the specified food in storage.
+     *
+     * @param  \App\Http\Requests\FoodRequest  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function update(FoodRequest $request, int $id): JsonResponse
     {
-        $user = $request->user();
+        $food = $this->foodService->getFoodById($id);
 
-        $data = $request->validated();
-        $data['user_id'] = $user->id;
-        $data['portion_grams'] = $data['portion_grams'] ?? 100;
-
-        $food = UserFood::create($data);
-
-        SummaryFoodService::recalculateSummary($user->id, $data['date']);
-
-        return response()->json([
-            'message' => 'Makanan berhasil ditambahkan.',
-            'data' => new FoodResource($food),
-        ], 201);
-    }
-
-    public function update(FoodRequest $request, UserFood $userFood)
-    {
-        $user = $request->user();
-
-        // Pastikan hanya user pemilik data yang bisa mengupdate
-        if ($user->id !== $userFood->user_id) {
+        if (!$food || $food->user_id !== $request->user()->id) {
             return response()->json([
                 'success' => false,
-                'message' => 'Ups, ada yang salah..',
-            ], 403);
+                'message' => 'Data makanan tidak ditemukan atau kamu belum menambahkannya.'
+            ], 404);
         }
 
-        $data = $request->validated();
-
-        // Jika tidak ada portion_grams dikirim, jangan overwrite jadi null
-        if (!array_key_exists('portion_grams', $data)) {
-            unset($data['portion_grams']);
+        try {
+            $updatedFood = $this->foodService->updateFood($food, $request->validated());
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 400);
         }
-
-        $userFood->update($data);
-
-        // Rehitung summary harian jika ada perubahan pada date
-        SummaryFoodService::recalculateSummary($user->id, $userFood->date);
 
         return response()->json([
             'success' => true,
-            'message' => 'List makanan berhasil diperbarui.',
-            'data' => new FoodResource($userFood),
+            'message' => 'Data makanan berhasil diperbarui.',
+            'data' => new FoodResource($updatedFood)
         ]);
     }
 
-
-    // public function update($id, Request $request)
-    // {
-    //     $food = UserFood::where('user_id', Auth::id())->findOrFail($id);
-    //     $oldDate = $food->date;
-
-    //     $food->update($request->validated());
-
-    //     $newDate = $request->date ?? $oldDate;
-
-    //     SummaryFoodService::recalculateSummary(Auth::id(), $oldDate);
-    //     if ($oldDate !== $newDate) {
-    //         SummaryFoodService::recalculateSummary(Auth::id(), $newDate);
-    //     }
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => 'Food updated & summary refreshed.',
-    //         'data' => new FoodResource($food),
-    //     ]);
-    // }
-
-    public function destroy($id)
+    /**
+     * Remove the specified food from storage.
+     *
+     * @param  int  $id
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function destroy(int $id, Request $request): JsonResponse
     {
-        $food = UserFood::where('user_id', Auth::id())->findOrFail($id);
-        $date = $food->date;
-        $food->delete();
+        $food = $this->foodService->getFoodById($id);
 
-        SummaryFoodService::recalculateSummary(Auth::id(), $date);
+        if (!$food || $food->user_id !== $request->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data makanan tidak ditemukan atau kamu belum menambahkannya.'
+            ], 404);
+        }
+
+        try {
+            $this->foodService->deleteFood($food);
+        } catch (\Exception $e) { // Internal Server Error
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Makanan berhasil dihapus.',
-        ]);
+            'message' => 'Data makanan berhasil dihapus.'
+        ], 200);
     }
 }

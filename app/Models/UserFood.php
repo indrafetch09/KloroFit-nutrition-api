@@ -2,31 +2,35 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Enums\MealType;
 
 class UserFood extends Model
 {
+    use HasFactory;
+
     protected $table = 'user_foods';
 
     protected $fillable = [
         'user_id',
         'nutrition_library_id',
         'meal_type',
-        'date'
+        'date',
     ];
 
-    public function getFormattedDateAttribute()
-    {
-        return $this->date ? $this->date->format('Y-m-d') : null;
-    }
+    protected $casts = [
+        'meal_type' => MealType::class,
+        'date' => 'date',
+    ];
 
-    public function user(): BelongsTo
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function nutrition(): BelongsTo
+    // Tambahkan relasi ke NutritionLibrary
+    public function nutritionLibrary()
     {
         return $this->belongsTo(NutritionLibrary::class, 'nutrition_library_id');
     }
