@@ -23,7 +23,7 @@ class FoodService
         // 1. Ambil data nutrisi dari NutritionLibrary
         $libraryItem = NutritionLibrary::find($data['nutrition_library_id']);
         if (!$libraryItem) {
-            throw new \Exception('Nutrition library item not found.');
+            throw new \Exception('Ups.. data makanan yang kamu cari tidak ada.');
         }
 
         // 2. Buat UserFood (hanya menyimpan ID referensi dan detail konsumsi)

@@ -16,9 +16,9 @@ class FoodResource extends JsonResource
             'fat' => $this->fat,
             'protein' => $this->protein,
             'carbs' => $this->carbs,
-            'date' => $this->date->format('Y-m-d'),
-            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
-            'update_at' => $this->update_at->format('Y-m-d H:i:s'),
+            'date' => $this->date,
+            'created_at' => $this->created_at,
+            'update_at' => $this->update_at,
         ];
     }
 }

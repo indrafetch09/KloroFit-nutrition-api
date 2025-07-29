@@ -11,7 +11,6 @@ use Illuminate\Http\Request;
 class FoodController extends Controller
 {
     protected FoodService $foodService;
-
     public function __construct(FoodService $foodService)
     {
         $this->foodService = $foodService;
