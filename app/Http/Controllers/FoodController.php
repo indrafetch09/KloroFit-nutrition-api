@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\FoodRequest;
-use App\Http\Resources\FoodResource;
+use Illuminate\Http\Request;
 use App\Services\FoodService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Http\Requests\FoodRequest;
+use App\Http\Requests\StoreFoodRequest;
+use App\Http\Resources\FoodResource;
 
 class FoodController extends Controller
 {
     protected FoodService $foodService;
+
     public function __construct(FoodService $foodService)
     {
         $this->foodService = $foodService;
@@ -24,27 +26,44 @@ class FoodController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $foods = $this->foodService->getAllFoodsForUser($request->user()->id);
+        $userId = $request->user()->id;
+        $date = $request->query('date'); // Ambil parameter 'date' dari URL query
 
-        if ($foods->isEmpty()) {
+        try {
+            if ($date) {
+                // Jika parameter 'date' ada, panggil method service dengan filter tanggal
+                $foods = $this->foodService->getAllFoodsForUserByDate($userId, $date);
+            } else {
+                // Jika tidak ada parameter 'date', panggil method service tanpa filter
+                $foods = $this->foodService->getAllFoodsForUser($userId);
+            }
+
+            if ($foods->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada data makanan yang ditemukan.'
+                ], 404);
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => 'Tidak ada data makanan yang ditemukan.',
-                'data' => [],
-            ]);
+                'message' => 'Data makanan berhasil diambil.',
+                'data' => FoodResource::collection($foods)
+            ], 200);
+        } catch (\Exception $e) {
+            // Tangani kesalahan umum
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data makanan.',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Data makanan berhasil diambil.',
-            'data' => FoodResource::collection($foods),
-        ]);
     }
 
     /**
-     * Store a newly created food in storage.
+     * Store a newly created food entry in storage.
      *
-     * @param  \App\Http\Requests\FoodRequest  $request
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function store(FoodRequest $request): JsonResponse
@@ -52,22 +71,42 @@ class FoodController extends Controller
         $validatedData = $request->validated();
         $validatedData['user_id'] = $request->user()->id;
 
-        // Semua data yang dibutuhkan (nutrition_library_id, meal_type, date) sudah ada di $validatedData
-        // yang datang dari FoodRequest.
         try {
             $food = $this->foodService->createFood($validatedData);
         } catch (\Exception $e) { // Bad Request jika library item tidak ditemukan
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => 'data makanan harus lengkap.',
             ], 400);
         }
 
         return response()->json([
             'success' => true,
             'message' => 'Data makanan berhasil ditambahkan.',
-            'data' => new FoodResource($food)
         ], 201);
+    }
+
+
+    public function storeMultipleFoods(StoreFoodRequest $request)
+    {
+        $userId = $request->user()->id;
+        $foodsData = $request->validated()['foods'];
+
+        try {
+            $foods = $this->foodService->createMultipleFoods($foodsData, $userId);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data makanan berhasil ditambahkan.',
+                'data' => FoodResource::collection($foods)
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menyimpan data makanan.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -90,7 +129,7 @@ class FoodController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Data makanan berhasil diambil.',
+            // 'message' => 'Data makanan berhasil diambil.',
             'data' => new FoodResource($food)
         ]);
     }

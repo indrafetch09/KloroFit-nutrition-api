@@ -20,10 +20,16 @@ class GoalService
         return $goal;
     }
 
+
+
     public function getGoalByDate(int $userId, string $date): ?Goal
     {
-        return Goal::where('user_id', $userId)->whereDate('date', $date)->first();
+        return Goal::where('user_id', $userId)
+            ->whereDate('date', $date)
+            ->first();
     }
+
+
 
     public function getGoalsForUser(int $userId, ?string $startDate = null, ?string $endDate = null): Collection
     {
@@ -38,6 +44,8 @@ class GoalService
 
         return $query->orderBy('date', 'desc')->get();
     }
+
+
 
     public function deleteGoal(Goal $goal): ?bool
     {

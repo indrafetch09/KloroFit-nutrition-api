@@ -16,7 +16,7 @@ class FoodRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nutrition_library_id' => [ // <--- Ini yang baru
+            'nutrition_library_id' => [
                 'required',
                 'integer',
                 'exists:nutrition_libraries,id' // Memastikan ID ada di tabel nutrition_libraries

@@ -37,7 +37,6 @@ class GoalController extends Controller
         return response()->json([
             'success' => true,
             'message' => $message,
-            'data' => new GoalResource($goal)
         ], $statusCode);
     }
 

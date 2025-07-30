@@ -34,12 +34,12 @@ Route::prefix('v1')->group(function () {
 
         // Nutrition Library search
         Route::prefix('nutrition-libraries')->group(function () {
-            Route::get('/search', [NutritionLibraryController::class, 'searchByName']);
+            Route::get('/search', [NutritionLibraryController::class, 'searchByName']); // Mencari data makanan berdasarkan nama 
+            Route::get('/{id}', [NutritionLibraryController::class, 'show']); // Detail data makanan
         });
 
         // Set Goals
         Route::prefix('goals')->group(function () {
-            // Route::get('/', [GoalController::class, 'index']); // Mengambil semua goals
             Route::get('/{date}', [GoalController::class, 'show']); // Mengambil goal spesifik by date
             Route::post('/set', [GoalController::class, 'storeOrUpdate']); // Untuk membuat/memperbarui goal harian
             Route::delete('/{date}', [GoalController::class, 'destroy']); // Menghapus goal by date
@@ -48,8 +48,10 @@ Route::prefix('v1')->group(function () {
         // Food tracking
         Route::prefix('foods')->group(function () {
             Route::get('/', [FoodController::class, 'index']);
+            Route::get('/{date}', [FoodController::class, 'index']);
             Route::get('/{id}', [FoodController::class, 'show']);
             Route::post('/', [FoodController::class, 'store']);
+            Route::post('/select', [FoodController::class, 'storeMultipleFoods']);
             Route::put('/{id}', [FoodController::class, 'update']);
             Route::delete('/{id}', [FoodController::class, 'destroy']);
         });

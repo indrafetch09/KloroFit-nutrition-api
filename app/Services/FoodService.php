@@ -18,35 +18,24 @@ class FoodService
      * @return \App\Models\UserFood
      * @throws \Exception Jika nutrition_library_id tidak ditemukan
      */
+
     public function createFood(array $data): UserFood
     {
-        // 1. Ambil data nutrisi dari NutritionLibrary
-        $libraryItem = NutritionLibrary::find($data['nutrition_library_id']);
-        if (!$libraryItem) {
-            throw new \Exception('Ups.. data makanan yang kamu cari tidak ada.');
-        }
 
-        // 2. Buat UserFood (hanya menyimpan ID referensi dan detail konsumsi)
-        $food = UserFood::create([
-            'user_id' => $data['user_id'],
-            'nutrition_library_id' => $data['nutrition_library_id'],
-            'meal_type' => $data['meal_type'],
-            'date' => $data['date'] ?? Carbon::today()->toDateString(), // Gunakan date dari input atau today
-        ]);
+        // 2. Buat instance model UserFood baru
+        $userFood = new UserFood(); // Ganti $food dengan $userFood
 
-        // 3. Update SummaryFood menggunakan nutrisi dari library
-        $this->updateDailyFoodSummary(
-            $food->user_id,
-            $food->date, // Kirim tanggal konsumsi
-            [
-                'calories' => $libraryItem->calories,
-                'carbs' => $libraryItem->carbs,
-                'protein' => $libraryItem->protein,
-                'fat' => $libraryItem->fat,
-            ],
-            'add'
-        );
-        return $food;
+        // 3. Isi kolom-kolom model UserFood dengan data dari input
+        $userFood->user_id = $data['user_id'];
+        $userFood->nutrition_library_id = $data['nutrition_library_id'];
+        $userFood->meal_type = $data['meal_type'];
+        $userFood->date = $data['date'];
+
+        $userFood->save();
+
+        $userFood->load('nutritionLibrary');
+
+        return $userFood; // Return the saved UserFood model
     }
 
     /**
@@ -61,7 +50,7 @@ class FoodService
     {
         // Periksa apakah nutrition_library_id berubah
         $oldLibraryItem = $food->nutritionLibrary;
-        $newLibraryItem = $oldLibraryItem; // Default to old one
+        $newLibraryItem = $oldLibraryItem;
 
         if (isset($data['nutrition_library_id']) && $data['nutrition_library_id'] !== $food->nutrition_library_id) {
             $newLibraryItem = NutritionLibrary::find($data['nutrition_library_id']);
@@ -103,13 +92,13 @@ class FoodService
      *
      * @param  \App\Models\UserFood  $food
      * @return bool|null
+     * 
      */
     public function deleteFood(UserFood $food): ?bool
     {
         // Ambil nutrisi dari library yang terkait sebelum menghapus
         $libraryItem = $food->nutritionLibrary;
         if (!$libraryItem) {
-            // Ini seharusnya tidak terjadi jika integritas data terjaga dengan foreign key
             throw new \Exception('Associated nutrition library item not found for food to be deleted.');
         }
 
@@ -136,11 +125,41 @@ class FoodService
      * @param  int  $userId
      * @return \Illuminate\Database\Eloquent\Collection
      */
+    public function getAllFoodsForUserByDate(int $userId, string $date): Collection
+    {
+        return UserFood::where('user_id', $userId)
+            ->whereDate('date', $date)
+            ->with('nutritionLibrary')
+            ->get();
+    }
+
+
     public function getAllFoodsForUser(int $userId): Collection
     {
         return UserFood::where('user_id', $userId)
-            ->with('nutritionLibrary') // Eager load relasi
+            ->with('nutritionLibrary')
             ->get();
+    }
+
+    public function createMultipleFoods(int $userId, array $foodsData)
+    {
+        $createdFoods = collect(); // Buat collection kosong untuk menampung model yang baru dibuat
+
+        foreach ($foodsData as $foodData) {
+            // Gunakan metode mass assignment atau satu per satu
+            $food = new UserFood([
+                'user_id' => $userId,
+                'nutrition_library_id' => $foodData['nutrition_library_id'],
+                'meal_type' => $foodData['meal_type'],
+                'date' => $foodData['date'],
+            ]);
+            $food->save();
+
+            // Load relasi agar accessor di model berfungsi dengan benar
+            $food->load('nutritionLibrary');
+
+            $createdFoods->push($food);
+        }
     }
 
     /**

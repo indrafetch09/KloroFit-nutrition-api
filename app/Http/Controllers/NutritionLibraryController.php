@@ -16,25 +16,51 @@ class NutritionLibraryController extends Controller
         $user = Auth::user();
     }
 
-    // ✅ Search makanan berdasarkan nama atau tampilkan semua
+    /**
+     * Search for food by name or display all.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function searchByName(Request $request)
     {
         $query = $request->query('q');
 
         if ($query) {
             $foods = NutritionLibrary::where('name', 'LIKE', "%{$query}%")->paginate(10);
+            $message = $foods->isEmpty() ? 'Ups.. data makanan kosong.' : 'Data makanan berhasil ditemukan';
         } else {
             $foods = NutritionLibrary::paginate(10);
+            $message = $foods->isEmpty() ? 'Ups.. data makanan kosong.' : 'Ini adalah semua data makanan yang telah kamu masukkan .';
         }
 
-        return NutritionLibraryResource::collection($foods);
+        return NutritionLibraryResource::collection($foods)->additional([
+            'message' => $message,
+            'success' => true,
+        ], 200);
     }
 
-    // ✅ Tampilkan detail makanan berdasarkan ID
+    /**
+     * Display food details by ID.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function show($id)
     {
-        $item = NutritionLibrary::findOrFail($id);
-        return new NutritionLibraryResource($item);
+        $item = NutritionLibrary::find($id);
+
+        if (!$item) {
+            return response()->json([
+                'message' => 'Data makanan kosong.',
+                'success' => false,
+            ], 404);
+        }
+
+        return (new NutritionLibraryResource($item))->additional([
+            'message' => 'Data makanan berhasil ditemukan.',
+            'success' => true,
+        ], 200);
     }
 
     // // ✅ Simpan data makanan baru

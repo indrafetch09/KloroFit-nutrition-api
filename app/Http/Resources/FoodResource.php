@@ -2,23 +2,27 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class FoodResource extends JsonResource
+class FoodResource extends JsonResource // Atau UserFoodResource
 {
-    public function toArray(Request $request): array
+    /**
+     * Transform the resource into an array.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
+     */
+    public function toArray($request)
     {
         return [
-            'name' => $this->name,
-            'meal_type' => $this->meal_type?->value,
-            'calories' => $this->calories,
-            'fat' => $this->fat,
-            'protein' => $this->protein,
-            'carbs' => $this->carbs,
-            'date' => $this->date,
-            'created_at' => $this->created_at,
-            'update_at' => $this->update_at,
+            'id' => $this->id,
+            'user_id' => $this->user_id,
+            'nutrition_library_id' => $this->nutrition_library_id,
+            'meal_type' => $this->meal_type, // Ini akan otomatis di-cast oleh model
+            'created_at' => $this->created_at->format('Y-m-d'),
+            'updated_at' => $this->updated_at->format('Y-m-d'),
+            // Jika Anda ingin menyertakan seluruh objek nutritionLibrary di dalam response:
+            'nutrition_details' => new NutritionLibraryResource($this->whenLoaded('nutritionLibrary')),
         ];
     }
 }
