@@ -26,6 +26,7 @@ class StoreFoodRequest extends FormRequest
             'foods' => 'required|array',
 
             // Validasi setiap item di dalam array 'foods'
+            'foods.*.user_id' => 'required|integer|exists:users,id',
             'foods.*.nutrition_library_id' => 'required|integer|exists:nutrition_libraries,id',
             'foods.*.meal_type' => 'required|string', // Pastikan Enums juga divalidasi
             'foods.*.date' => 'required|date',

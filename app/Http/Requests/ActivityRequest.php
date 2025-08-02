@@ -10,7 +10,7 @@ class ActivityRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth('sanctum')->check(); // Pastikan user login
+        return true;
     }
 
     public function rules(): array
@@ -32,14 +32,5 @@ class ActivityRequest extends FormRequest
         }
 
         return $common;
-    }
-
-    public function messages(): array
-    {
-        return [
-            'type.in' => 'Activity type is not valid. It must be one of this type: run, walk, swimming, or cycling.',
-            'date.before_or_equal' => 'Date is not valid.',
-            // dst
-        ];
     }
 }

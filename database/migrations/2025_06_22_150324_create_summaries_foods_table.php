@@ -19,13 +19,13 @@ return new class extends Migration
             $table->decimal('total_fat')->default(0);
             $table->decimal('total_carbs')->default(0);
 
-            // Per meal type
-            $table->decimal('breakfast_calories')->default(0);
-            $table->decimal('lunch_calories')->default(0);
-            $table->decimal('dinner_calories')->default(0);
-            $table->decimal('snack_calories')->default(0);
-            $table->timestamps();
-            $table->unique(['user_id', 'date']);
+            // // Per meal type
+            // $table->decimal('breakfast_calories')->default(0);
+            // $table->decimal('lunch_calories')->default(0);
+            // $table->decimal('dinner_calories')->default(0);
+            // $table->decimal('snack_calories')->default(0);
+            // $table->timestamps();
+            // $table->unique(['user_id', 'date']);
         });
     }
 

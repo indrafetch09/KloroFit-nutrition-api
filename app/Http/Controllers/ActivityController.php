@@ -6,6 +6,7 @@ use App\Models\UserActivity;
 use App\Services\SummaryActivityService;
 use App\Http\Resources\ActivityResource;
 use App\Enums\ActivityType;
+use App\Http\Requests\ActivityRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -23,59 +24,31 @@ class ActivityController extends Controller
         if ($activities->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'You have not added any activities yet',
+                'message' => 'Kamu belum menambahkan aktivitas hari ini.',
                 'data' => null,
             ], 404);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Activities fetched successfully',
+            'message' => 'Aktivitas berhasil ditambahkan.',
             'data' => ActivityResource::collection($activities),
         ]);
     }
 
-    public function store(Request $request)
+    public function store(ActivityRequest $request)
     {
-        $user = Auth::user();
 
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized.',
-            ], 401);
-        }
+        $validatedData = $request->validated();
+        $validatedData['user_id'] = $request->user()->id;
 
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'activity_date' => 'required|date|date_format:Y-m-d',
-            'type' => ActivityType::rules(),
-            'duration_minutes' => 'required|numeric|min:1|max:1440',
-            'distance' => 'nullable|numeric|min:0',
-            'calories_burned' => 'required|numeric|min:0',
-            'created_at' => 'nullable|date_format:Y-m-d H:i:s'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error.',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $data = $validator->validated();
-        $data['user_id'] = $user->id;
-
-        $food = UserActivity::create($data);
-
-        // Update summary harian
-        GlobalSummaryActivityService::recalculateSummary($user->id, $data['activity_date']);
+        // Panggil service untuk membuat record baru
+        $activity = UserActivity::create($validatedData);
 
         return response()->json([
             'success' => true,
-            'message' => 'Activity added and summary updated.',
-            'data' => $food,
+            'message' => 'Aktivitas berhasil ditambahkan.',
+            'data' => ActivityResource::create() // Atau gunakan ActivityResource
         ], 201);
     }
 

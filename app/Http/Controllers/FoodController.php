@@ -6,8 +6,10 @@ use Illuminate\Http\Request;
 use App\Services\FoodService;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\FoodRequest;
-use App\Http\Requests\StoreFoodRequest;
 use App\Http\Resources\FoodResource;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\StoreFoodRequest;
+use App\Http\Resources\StoreBulkFoodResource;
 
 class FoodController extends Controller
 {
@@ -76,7 +78,8 @@ class FoodController extends Controller
         } catch (\Exception $e) { // Bad Request jika library item tidak ditemukan
             return response()->json([
                 'success' => false,
-                'message' => 'data makanan harus lengkap.',
+                'message' => 'Data makanan tidak ditemukan.',
+                'error' => $e->getMessage()
             ], 400);
         }
 
@@ -93,7 +96,7 @@ class FoodController extends Controller
         $foodsData = $request->validated()['foods'];
 
         try {
-            $foods = $this->foodService->createMultipleFoods($foodsData, $userId);
+            $foods = $this->foodService->createBulkFoods($userId, $foodsData);
 
             return response()->json([
                 'success' => true,
@@ -145,7 +148,7 @@ class FoodController extends Controller
     {
         $food = $this->foodService->getFoodById($id);
 
-        if (!$food || $food->user_id !== $request->user()->id) {
+        if (!$food || $food->user_id !== Auth::user()->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Data makanan tidak ditemukan atau kamu belum menambahkannya.'
