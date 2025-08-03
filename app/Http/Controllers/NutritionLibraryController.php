@@ -31,7 +31,7 @@ class NutritionLibraryController extends Controller
             $message = $foods->isEmpty() ? 'Ups.. data makanan kosong.' : 'Data makanan berhasil ditemukan';
         } else {
             $foods = NutritionLibrary::paginate(10);
-            $message = $foods->isEmpty() ? 'Ups.. data makanan kosong.' : 'Ini adalah semua data makanan yang telah kamu masukkan .';
+            $message = $foods->isEmpty() ? 'Ups.. data makanan kosong.' : 'Data makanan berhasil ditemukan .';
         }
 
         return NutritionLibraryResource::collection($foods)->additional([

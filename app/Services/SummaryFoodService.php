@@ -2,49 +2,81 @@
 
 namespace App\Services;
 
-use App\Models\UserFood;
 use App\Models\SummaryFood;
+use App\Models\User;
+use App\Models\Goal;
+use App\Models\UserFood;
+use Carbon\Carbon;
 
 class SummaryFoodService
 {
-    public static function recalculateSummary(int $userId, string $date): void
+    /**
+     * Creates a full summary for the dashboard by combining Goals and consumed food.
+     * This method is intended for read-only operations for the UI.
+     *
+     * @param \App\Models\User $user
+     * @param string $dateString
+     * @return array
+     */
+    public function getDashboardSummary(User $user, string $dateString): array
     {
+        $date = Carbon::parse($dateString);
 
-        // Ambil data makanan dari data user
-        $foods = UserFood::with('nutrition_libraries_id')
-            ->where('user_id', $userId)
-            ->where('date', $date)
+        // 1. Ambil data goals untuk tanggal yang diberikan
+        $goal = Goal::where('user_id', $user->id)
+            ->whereDate('date', $date)
+            ->first();
+
+        // 2. Ambil semua entri makanan (UserFood) untuk tanggal yang diberikan
+        // Eager load nutritionLibrary untuk mendapatkan detail nutrisi
+        $consumedFoods = UserFood::where('user_id', $user->id)
+            ->whereDate('date', $date)
+            ->with('nutritionLibrary')
             ->get();
 
-        // Hitung total nutrisi dari semua makanan
-        $totals = [
-            'calorie' => 0,
-            'carb' => 0,
-            'fat' => 0,
+        // 3. Hitung total nutrisi yang dikonsumsi dari semua makanan
+        $totalConsumed = [
+            'calories' => 0,
+            'carbs' => 0,
             'protein' => 0,
-            'breakfast_calories' => 0,
-            'lunch_calories' => 0,
-            'dinner_calories' => 0,
-            'snack_calories' => 0,
+            'fat' => 0,
         ];
 
-        foreach ($foods as $food) {
-            $qtyFactor = $food->quantity / 100; // karena per 100 gram
-            $totals['calorie'] += $food->nutrition->calorie * $qtyFactor;
-            $totals['carb']    += $food->nutrition->carb * $qtyFactor;
-            $totals['fat']     += $food->nutrition->fat * $qtyFactor;
-            $totals['protein'] += $food->nutrition->protein * $qtyFactor;
+        foreach ($consumedFoods as $food) {
+            // Pastikan relasi nutritionLibrary tersedia sebelum mengakses propertinya
+            if ($food->nutritionLibrary) {
+                $totalConsumed['calories'] += $food->nutritionLibrary->calories;
+                $totalConsumed['carbs'] += $food->nutritionLibrary->carbs;
+                $totalConsumed['protein'] += $food->nutritionLibrary->protein;
+                $totalConsumed['fat'] += $food->nutritionLibrary->fat;
+            }
         }
 
-        // Simpan atau update ke summaries_foods
-        SummaryFood::updateOrCreate(
-            ['user_id' => $userId, 'date' => $date],
-            [
-                'total_calories' => (int) round($totals['calories']),
-                'total_carb'    => (int) round($totals['carb']),
-                'total_fat'     => (int) round($totals['fat']),
-                'total_protein' => (int) round($totals['protein']),
-            ]
-        );
+        // Initialize goals with default values (0) if none exist
+        $goals = [
+            'calories' => $goal ? $goal->calories : 0,
+            'carbs' => $goal ? $goal->carbs : 0,
+            'protein' => $goal ? $goal->protein : 0,
+            'fat' => $goal ? $goal->fat : 0,
+        ];
+
+        // 4. Hitung sisa nutrisi
+        $remaining = [
+            'calories' => $goals['calories'] - $totalConsumed['calories'],
+            'carbs' => $goals['carbs'] - $totalConsumed['carbs'],
+            'protein' => $goals['protein'] - $totalConsumed['protein'],
+            'fat' => $goals['fat'] - $totalConsumed['fat'],
+        ];
+
+        // 5. Tentukan status kalori
+        $statusCalories = ($goals['calories'] > 0 && $remaining['calories'] >= 0) ? 'within_goal' : 'over_goal';
+
+        return [
+            'date' => $dateString,
+            'goals' => $goals,
+            'consumed' => $totalConsumed,
+            'remaining' => $remaining,
+            'status_calories' => $statusCalories,
+        ];
     }
 }

@@ -3,18 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Models\UserActivity;
-use App\Services\SummaryActivityService;
-use App\Http\Resources\ActivityResource;
-use App\Enums\ActivityType;
-use App\Http\Requests\ActivityRequest;
 use Illuminate\Http\Request;
+use App\Services\ActivityService;
+use App\Services\SummaryActivity;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
-use PhpParser\Node\Stmt\Global_;
-use SummaryActivityService as GlobalSummaryActivityService;
+use App\Http\Requests\ActivityRequest;
+use App\Http\Resources\ActivityResource;
+
 
 class ActivityController extends Controller
 {
+    protected ActivityService $activityService;
+
+    public function __construct(ActivityService $activityService)
+    {
+        $this->activityService = $activityService;
+    }
+
+
     public function index()
     {
         $activities = UserActivity::where('user_id', Auth::id())
@@ -52,6 +58,7 @@ class ActivityController extends Controller
         ], 201);
     }
 
+
     public function update($id, Request $request)
     {
         $activity = UserActivity::where('user_id', Auth::id())->findOrFail($id);
@@ -60,10 +67,10 @@ class ActivityController extends Controller
         $activity->update($request->validated());
         $newDate = $request->activity_date ?? $oldDate;
 
-        GlobalSummaryActivityService::recalculateSummary(Auth::id(), $oldDate);
+        SummaryActivityService::recalculateSummary(Auth::id(), $oldDate);
 
         if ($oldDate !== $newDate) {
-            GlobalSummaryActivityService::recalculateSummary(Auth::id(), $newDate);
+            SummaryActivityService::recalculateSummary(Auth::id(), $newDate);
         }
 
         return response()->json([
@@ -79,7 +86,7 @@ class ActivityController extends Controller
         $date = $activity->activity_date;
         $activity->delete();
 
-        GlobalSummaryActivityService::recalculateSummary(Auth::id(), $date);
+        SummaryActivityService::recalculateSummary(Auth::id(), $date);
 
         return response()->json([
             'success' => true,

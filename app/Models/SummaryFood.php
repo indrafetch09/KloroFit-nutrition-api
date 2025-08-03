@@ -11,39 +11,22 @@ class SummaryFood extends Model
     protected $fillable = [
         'user_id',
         'date',
-        'calories',
-        'fat',
-        'protein',
-        'carbs',
-        'breakfast_calories',
-        'lunch_calories',
-        'dinner_calories',
-        'snack_calories',
-        'created_at',
-        'updated_at',
+        'total_calories',
+        'total_fat',
+        'total_protein',
+        'total_carbs',
     ];
 
     protected $casts = [
         'date' => 'date',
+        'total_calories' => 'float',
+        'total_fat' => 'float',
+        'total_protein' => 'float',
+        'total_carbs' => 'float',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function getTotalFatAttribute()
-    {
-        return $this->fat;
-    }
-
-    public function getTotalProteinAttribute()
-    {
-        return $this->protein;
-    }
-
-    public function getTotalCarbsAttribute()
-    {
-        return $this->carbs;
     }
 }

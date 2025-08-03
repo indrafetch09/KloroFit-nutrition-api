@@ -15,13 +15,13 @@ class FoodResource extends JsonResource // Atau UserFoodResource
     public function toArray($request)
     {
         return [
-            'id' => $this->id,
+            // 'id' => $this->id,
             'user_id' => $this->user_id,
             'nutrition_library_id' => $this->nutrition_library_id,
             'meal_type' => $this->meal_type, // Ini akan otomatis di-cast oleh model
-            'date' => $this->date,
-            'created_at' => $this->created_at->format('Y-m-d'),
-            'updated_at' => $this->updated_at->format('Y-m-d'),
+            'date' => $this->date->format('Y-m-d'),
+            // 'created_at' => $this->created_at->format('Y-m-d'),
+            // 'updated_at' => $this->updated_at->format('Y-m-d'),
             // Jika Anda ingin menyertakan seluruh objek nutritionLibrary di dalam response:
             'nutrition_details' => new NutritionLibraryResource($this->whenLoaded('nutritionLibrary')),
         ];

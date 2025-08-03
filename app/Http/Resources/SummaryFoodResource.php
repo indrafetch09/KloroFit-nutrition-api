@@ -20,11 +20,6 @@ class SummaryFoodResource extends JsonResource
             'total_protein' => round($this->total_protein, 2),
             'total_fat' => round($this->total_fat, 2),
             'total_carbs' => round($this->total_carbs, 2),
-            'breakfast_calories' => round($this->breakfast_calories, 2),
-            'lunch_calories' => round($this->lunch_calories, 2),
-            'dinner_calories' => round($this->dinner_calories, 2),
-            'snack_calories' => round($this->snack_calories, 2),
         ];
-        return parent::toArray($request);
     }
 }

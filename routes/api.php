@@ -56,13 +56,13 @@ Route::prefix('v1')->group(function () {
             Route::delete('/{id}', [FoodController::class, 'destroy']);
         });
 
-        // Activity tracking 
-        Route::prefix('activities')->group(function () {
-            Route::get('/', [ActivityController::class, 'index']);
-            Route::post('/set', [ActivityController::class, 'store']);
-            Route::put('/{id}', [ActivityController::class, 'update']);
-            Route::delete('/{id}', [ActivityController::class, 'destroy']);
-        });
+        // // Activity tracking 
+        // Route::prefix('activities')->group(function () {
+        //     Route::get('/', [ActivityController::class, 'index']);
+        //     Route::post('/set', [ActivityController::class, 'store']);
+        //     Route::put('/{id}', [ActivityController::class, 'update']);
+        //     Route::delete('/{id}', [ActivityController::class, 'destroy']);
+        // });
 
         // Dashboard
         Route::get('dashboard', [DashboardController::class, 'index']);

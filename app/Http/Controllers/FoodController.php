@@ -78,7 +78,7 @@ class FoodController extends Controller
         } catch (\Exception $e) { // Bad Request jika library item tidak ditemukan
             return response()->json([
                 'success' => false,
-                'message' => 'Data makanan tidak ditemukan.',
+                'message' => 'Gagal menambahkan makanan.',
                 'error' => $e->getMessage()
             ], 400);
         }
@@ -86,6 +86,7 @@ class FoodController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Data makanan berhasil ditambahkan.',
+            'data' => new FoodResource($food)
         ], 201);
     }
 
@@ -102,7 +103,7 @@ class FoodController extends Controller
                 'success' => true,
                 'message' => 'Data makanan berhasil ditambahkan.',
                 'data' => FoodResource::collection($foods)
-            ], 200);
+            ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -148,7 +149,7 @@ class FoodController extends Controller
     {
         $food = $this->foodService->getFoodById($id);
 
-        if (!$food || $food->user_id !== Auth::user()->id) {
+        if (!$food || $food->user_id !== $request->user()->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Data makanan tidak ditemukan atau kamu belum menambahkannya.'
