@@ -7,9 +7,7 @@ use App\Services\FoodService;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\FoodRequest;
 use App\Http\Resources\FoodResource;
-use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\StoreFoodRequest;
-use App\Http\Resources\StoreBulkFoodResource;
 
 class FoodController extends Controller
 {
