@@ -8,8 +8,6 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NutritionLibraryController;
-use App\Http\Controllers\SummaryController;
-use App\Http\Controllers\SummaryFoodController;
 
 Route::prefix('v1')->group(function () {
     // Auth routes

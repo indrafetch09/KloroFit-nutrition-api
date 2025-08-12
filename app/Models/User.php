@@ -49,12 +49,12 @@ class User extends Authenticatable
 
     public function foods()
     {
-        return $this->hasMany(Food::class);
+        return $this->hasMany(UserFood::class);
     }
 
     public function activities()
     {
-        return $this->hasMany(Activity::class);
+        return $this->hasMany(UserActivity::class);
     }
 
     public function goal()

@@ -30,17 +30,17 @@ class DashboardController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        $today = Carbon::today()->toDateString();
+        $date = $request->query('date', Carbon::today()->toDateString());
 
         // Panggil metode baru untuk mendapatkan ringkasan nutrisi lengkap
-        $summaryData = $this->summaryFoodService->getDashboardSummary($user, $today);
+        $summaryData = $this->summaryFoodService->getDashboardSummary($user, $date);
 
         // Dapatkan Makanan yang Baru Ditambahkan (Recently Food Added)
-        $recentFoods = $this->foodService->getRecentFoodsForUser($user->id, $today);
+        $recentFoods = $this->foodService->getRecentFoodsForUser($user->id, $date);
 
         // Gabungkan semua data untuk respons dashboard
         return response()->json([
-            'date' => $today,
+            'date' => $date,
             'goals' => $summaryData['goals'],
             'consumed' => $summaryData['consumed'],
             'remaining' => $summaryData['remaining'],
