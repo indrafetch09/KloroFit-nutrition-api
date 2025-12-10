@@ -207,7 +207,7 @@ class AuthController extends Controller
         }
     }
 
-    /**
+    /**P
      * Logout from all devices
      */
     public function logoutAll(Request $request)

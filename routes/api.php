@@ -28,7 +28,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/change-password', [AuthController::class, 'changePassword']);
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/logout-all', [AuthController::class, 'logoutAll']);
-        Route::post('/refresh-token', [AuthController::class, 'refreshTokens']);
+        Route::post('/refresh-token', [AuthController::class, 'refreshToken']);
 
         // Nutrition Library search
         Route::prefix('nutrition-libraries')->group(function () {
