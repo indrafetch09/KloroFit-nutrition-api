@@ -41,7 +41,11 @@ class AuthController extends Controller
             ]);
 
             // Generate token
-            $token = $user->createToken($request->device_name, ['*'], now()->addDays(30));
+            $token = $user->createToken(
+                $request->device_name,
+                ['*'],
+                now()->addDays(30)
+            );
 
             return response()->json([
                 'success' => true,
@@ -103,7 +107,11 @@ class AuthController extends Controller
             $user->tokens()->where('name', $request->device_name)->delete();
 
             // Generate token baru
-            $token = $user->createToken($request->device_name, ['*'], now()->addDays(30));
+            $token = $user->createToken(
+                $request->device_name,
+                ['*'],
+                now()->addDays(30)
+            );
 
             return response()->json([
                 'success' => true,

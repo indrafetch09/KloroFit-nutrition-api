@@ -73,7 +73,7 @@ class FoodController extends Controller
 
         try {
             $food = $this->foodService->createFood($validatedData);
-        } catch (\Exception $e) { // Bad Request jika library item tidak ditemukan
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menambahkan makanan.',
