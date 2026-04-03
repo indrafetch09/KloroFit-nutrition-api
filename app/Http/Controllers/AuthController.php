@@ -33,6 +33,10 @@ class AuthController extends Controller
                 ], 422);
             }
 
+            $deviceName = $request->header('User-Agent')
+                ?? $request->input('device_name')
+                ?? 'unkown device!, please register with another device';
+
             // Create user
             $user = User::create([
                 'name' => $request->name,
@@ -42,7 +46,7 @@ class AuthController extends Controller
 
             // Generate token
             $token = $user->createToken(
-                $request->device_name,
+                $deviceName,
                 ['*'],
                 now()->addDays(30)
             );
@@ -82,7 +86,7 @@ class AuthController extends Controller
             $validator = Validator::make($request->all(), [
                 'email' => 'required|email',
                 'password' => 'required|string|min:6',
-                'device_name' => 'required|string',
+                'device_name' => 'required|string'
             ]);
 
             if ($validator->fails()) {
@@ -92,6 +96,11 @@ class AuthController extends Controller
                     'errors' => $validator->errors()
                 ], 422);
             }
+
+            $deviceName = $request->header('User-Agent')
+                ?? $request->input('device_name')
+                ?? 'unkown device!, please register with another device';
+
 
             // Cek kredensial
             $user = User::where('email', $request->email)->first();
@@ -104,11 +113,11 @@ class AuthController extends Controller
             }
 
             // Hapus token lama untuk device yang sama (optional)
-            $user->tokens()->where('name', $request->device_name)->delete();
+            $user->tokens()->where('name', $request->$deviceName)->delete();
 
             // Generate token baru
             $token = $user->createToken(
-                $request->device_name,
+                $deviceName,
                 ['*'],
                 now()->addDays(30)
             );
@@ -136,59 +145,6 @@ class AuthController extends Controller
             ], 500);
         }
     }
-
-    //     /**
-    //      * Get authenticated user info (ADMIN ONLY)
-    //      */
-    //     public function user(Request $request)
-    //     {
-    //         try {
-    //             $user = $request->user();
-
-    //             return response()->json([
-    //                 'success' => true,
-    //                 'message' => 'User data retrieved successfully',
-    //                 'data' => [
-    //                     'user' => [
-    //                         'id' => $user->id,
-    //                         'name' => $user->name,
-    //                         'email' => $user->email,
-    //                         'email_verified_at' => $user->email_verified_at,
-    //                         'created_at' => $user->created_at,
-    //                         'updated_at' => $user->updated_at,
-    //                     ]
-    //                 ]
-    //             ], 200);
-    //         } catch (\Exception $e) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'Something went wrong',
-    //                 'error' => $e->getMessage()
-    //             ], 500);
-    //         }
-    //     }
-
-    // under construction
-    // public function socailLogin(Request $request)
-    // {
-    //     // Implement social login logic here
-    //     // This is a placeholder method for future social login integration
-    //     return response()->json([
-    //         'success' => false,
-    //         'message' => 'Social login not implemented yet'
-    //     ], 501);
-    // }
-
-    // public funciton verifyEmail(Request $request, $id, $hash)
-    // {
-    //     // Implement email verification logic here
-    //     // This is a placeholder method for future email verification integration
-    //     return response()->json([
-    //         'success' => false,
-    //         'message' => 'Email verification not implemented yet'
-    //     ], 501);
-    // }
-
     /**
      * Logout user (revoke current token)
      */
