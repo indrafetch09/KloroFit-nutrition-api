@@ -32,13 +32,10 @@ class DashboardController extends Controller
         $user = $request->user();
         $date = $request->query('date', Carbon::today()->toDateString());
 
-        // Panggil metode baru untuk mendapatkan ringkasan nutrisi lengkap
         $summaryData = $this->summaryFoodService->getDashboardSummary($user, $date);
 
-        // Dapatkan Makanan yang Baru Ditambahkan (Recently Food Added)
         $recentFoods = $this->foodService->getRecentFoodsForUser($user->id, $date);
 
-        // Gabungkan semua data untuk respons dashboard
         return response()->json([
             'date' => $date,
             'goals' => $summaryData['goals'],
@@ -46,7 +43,7 @@ class DashboardController extends Controller
             'remaining' => $summaryData['remaining'],
             'status_calories' => $summaryData['status_calories'],
             'recently_food_added' => FoodResource::collection($recentFoods),
-            // 'total_calories_burned' => 0, // Placeholder
+            'total_calories_burned' => 0, // Placeholder
         ]);
     }
 }

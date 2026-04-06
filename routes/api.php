@@ -5,7 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FoodController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\UserController;
-// use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NutritionLibraryController;
 
@@ -30,7 +30,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/logout-all', [AuthController::class, 'logoutAll']);
         Route::post('/refresh-token', [AuthController::class, 'refreshToken']);
 
-        // Nutrition Library search
+        // Searching foods dari repository foods
         Route::prefix('nutrition-libraries')->group(function () {
             Route::get('/search', [NutritionLibraryController::class, 'searchByName']); // Mencari data makanan berdasarkan nama 
             Route::get('/{id}', [NutritionLibraryController::class, 'show']); // Detail data makanan
@@ -54,16 +54,16 @@ Route::prefix('v1')->group(function () {
             Route::delete('/{id}', [FoodController::class, 'destroy']);
         });
 
-        // // Activity tracking 
-        // Route::prefix('activities')->group(function () {
-        //     Route::get('/', [ActivityController::class, 'index']);
-        //     Route::post('/set', [ActivityController::class, 'store']);
-        //     Route::put('/{id}', [ActivityController::class, 'update']);
-        //     Route::delete('/{id}', [ActivityController::class, 'destroy']);
-        // });
+        // Activity tracking 
+        Route::prefix('activities')->group(function () {
+            Route::get('/', [ActivityController::class, 'index']);
+            Route::post('/set', [ActivityController::class, 'store']);
+            Route::put('/{id}', [ActivityController::class, 'update']);
+            Route::delete('/{id}', [ActivityController::class, 'destroy']);
+        });
 
         // Dashboard
-        Route::get('dashboard', [DashboardController::class, 'index']);
+        Route::get('/dashboard', [DashboardController::class, 'index']);
 
         // Profile
         Route::get('/profile', [UserController::class, 'profile']);
