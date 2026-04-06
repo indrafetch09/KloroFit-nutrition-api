@@ -54,7 +54,7 @@ class ActivityController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Aktivitas berhasil ditambahkan.',
-            'data' => ActivityResource::create() // Atau gunakan ActivityResource
+            'data' => $activity
         ], 201);
     }
 
