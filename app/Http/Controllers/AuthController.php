@@ -99,7 +99,7 @@ class AuthController extends Controller
 
             $deviceName = $request->header('User-Agent')
                 ?? $request->input('device_name')
-                ?? 'unkown device!, please register with another device';
+                ?? 'unkown device!, please register with another device that you may know.';
 
 
             // Cek kredensial
