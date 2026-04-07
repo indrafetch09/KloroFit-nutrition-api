@@ -51,7 +51,7 @@ class UserController extends Controller
             'password' => Hash::make($request->new_password),
         ]);
 
-        return response()->json(['message' => 'Password berhasil diubah']);
+        return response()->json(['message' => 'Password berhasil diubah'], 200);
     }
 
 
@@ -60,7 +60,7 @@ class UserController extends Controller
     public function getSettings(Request $request)
     {
         return response()->json([
-            'settings' => $request->user()->settings ?? new \stdClass()
+            'settings' => $request->user()->settings ?? new \stdClass() // Cari tahu apa itu stdClass dan typecasting
         ]);
     }
 
