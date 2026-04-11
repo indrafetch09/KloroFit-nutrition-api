@@ -77,7 +77,6 @@ class UserController extends Controller
             'app_version' => 'string|nullable',
         ]);
 
-        // Gabungkan settings lama dengan baru
         $settings = array_merge($user->settings ?? [], $validated);
         $user->settings = $settings;
         $user->save();
