@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\UserActivity;
-use Illuminate\Http\Request;
-use App\Services\ActivityService;
-use App\Services\SummaryActivity;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use App\Models\UserActivity;
 use App\Http\Requests\ActivityRequest;
 use App\Http\Resources\ActivityResource;
+use App\Services\ActivityService;
+use App\Services\SummaryActivity;
 
 
 class ActivityController extends Controller
