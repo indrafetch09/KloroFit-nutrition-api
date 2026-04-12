@@ -22,7 +22,6 @@ class AuthController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:6|confirmed',
-                'device_name' => 'required|string',
             ]);
 
             if ($validator->fails()) {
@@ -33,10 +32,6 @@ class AuthController extends Controller
                 ], 422);
             }
 
-            $deviceName = $request->header('User-Agent')
-                ?? $request->input('device_name')
-                ?? 'unkown device!, please register with another device';
-
             // Create user
             $user = User::create([
                 'name' => $request->name,
@@ -46,7 +41,6 @@ class AuthController extends Controller
 
             // Generate token
             $token = $user->createToken(
-                $deviceName,
                 ['*'],
                 now()->addDays(30)
             );
@@ -86,7 +80,6 @@ class AuthController extends Controller
             $validator = Validator::make($request->all(), [
                 'email' => 'required|email',
                 'password' => 'required|string|min:6',
-                'device_name' => 'required|string'
             ]);
 
             if ($validator->fails()) {
@@ -96,11 +89,6 @@ class AuthController extends Controller
                     'errors' => $validator->errors()
                 ], 422);
             }
-
-            $deviceName = $request->header('User-Agent')
-                ?? $request->input('device_name')
-                ?? 'unkown device!, please register with another device that you may know.';
-
 
             // Cek kredensial
             $user = User::where('email', $request->email)->first();
@@ -112,12 +100,11 @@ class AuthController extends Controller
                 ], 401);
             }
 
-            // Hapus token lama untuk device yang sama (optional)
-            $user->tokens()->where('name', $request->$deviceName)->delete();
+            // Hapus token lama
+            $user->tokens()->where('name', $request->delete());
 
             // Generate token baru
             $token = $user->createToken(
-                $deviceName,
                 ['*'],
                 now()->addDays(30)
             );
@@ -171,27 +158,27 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Logout from all devices
-     */
-    public function logoutAll(Request $request)
-    {
-        try {
-            // Revoke all tokens
-            $request->user()->tokens()->delete();
+    // /**
+    //  * Logout from all devices
+    //  */
+    // public function logoutAll(Request $request)
+    // {
+    //     try {
+    //         // Revoke all tokens
+    //         $request->user()->tokens()->delete();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Logged out from all devices successfully'
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Logged out from all devices successfully'
+    //         ], 200);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Something went wrong',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 
     /**
      * Refresh token
