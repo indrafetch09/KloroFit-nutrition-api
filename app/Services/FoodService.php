@@ -7,7 +7,6 @@ use App\Models\SummaryFood;
 use App\Models\NutritionLibrary;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
-use App\Enums\MealType;
 
 class FoodService
 {
@@ -22,10 +21,8 @@ class FoodService
     public function createFood(array $data): UserFood
     {
 
-        // 2. Buat instance model UserFood baru
-        $userFood = new UserFood(); // Ganti $food dengan $userFood
+        $userFood = new UserFood();
 
-        // 3. Isi kolom-kolom model UserFood dengan data dari input
         $userFood->user_id = $data['user_id'];
         $userFood->nutrition_library_id = $data['nutrition_library_id'];
         $userFood->meal_type = $data['meal_type'];
@@ -35,7 +32,7 @@ class FoodService
 
         $userFood->load('nutritionLibrary');
 
-        return $userFood; // Return the saved UserFood model
+        return $userFood;
     }
 
     /**
@@ -48,7 +45,6 @@ class FoodService
      */
     public function updateFood(UserFood $food, array $data): UserFood
     {
-        // Periksa apakah nutrition_library_id berubah
         $oldLibraryItem = $food->nutritionLibrary;
         $newLibraryItem = $oldLibraryItem;
 
@@ -59,23 +55,21 @@ class FoodService
             }
         }
 
-        // Hitung nutrisi yang akan dikurangkan (dari item lama)
         $nutrientsToSubtract = [
             'calories' => $oldLibraryItem->calories,
             'carbs' => $oldLibraryItem->carbs,
             'protein' => $oldLibraryItem->protein,
             'fat' => $oldLibraryItem->fat,
         ];
+
         $this->updateDailyFoodSummary($food->user_id, $food->date, $nutrientsToSubtract, 'subtract');
 
-        // Update UserFood
         $food->update([
-            'nutrition_library_id' => $newLibraryItem->id, // Gunakan ID yang baru (atau yang lama jika tidak berubah)
+            'nutrition_library_id' => $newLibraryItem->id,
             'meal_type' => $data['meal_type'] ?? $food->meal_type,
             'date' => $data['date'] ?? $food->date,
         ]);
 
-        // Hitung nutrisi yang akan ditambahkan (dari item baru atau yang diperbarui)
         $nutrientsToAdd = [
             'calories' => $newLibraryItem->calories,
             'carbs' => $newLibraryItem->carbs,
@@ -96,7 +90,6 @@ class FoodService
      */
     public function deleteFood(UserFood $food): ?bool
     {
-        // Ambil nutrisi dari library yang terkait sebelum menghapus
         $libraryItem = $food->nutritionLibrary;
         if (!$libraryItem) {
             throw new \Exception('Associated nutrition library item not found for food to be deleted.');
@@ -112,7 +105,6 @@ class FoodService
         $deleted = $food->delete();
 
         if ($deleted) {
-            // Kurangkan nutrisi dari summary food berdasarkan tanggal konsumsi
             $this->updateDailyFoodSummary($food->user_id, $food->date, $nutrientsToRemove, 'subtract');
         }
         return $deleted;
@@ -143,10 +135,8 @@ class FoodService
 
     public function createBulkFoods(int $userId, array $foodsData)
     {
-        $createdFoods = collect(); // Buat collection kosong untuk menampung model yang baru dibuat
-
+        $createdFoods = collect();
         foreach ($foodsData as $foodData) {
-            // Gunakan metode mass assignment atau satu per satu
             $food = new UserFood([
                 'user_id' => $userId['user_id'],
                 'nutrition_library_id' => $foodData['nutrition_library_id'],
@@ -155,7 +145,6 @@ class FoodService
             ]);
             $food->save();
 
-            // Load relasi agar accessor di model berfungsi dengan benar
             $food->load('nutritionLibrary');
 
             $createdFoods->push($food);
@@ -186,8 +175,8 @@ class FoodService
     public function getRecentFoodsForUser(int $userId, string $date, int $limit = 5): Collection
     {
         return UserFood::where('user_id', $userId)
-            ->whereDate('date', $date) // Filter berdasarkan tanggal konsumsi
-            ->with('nutritionLibrary') // Eager load relasi
+            ->whereDate('date', $date)
+            ->with('nutritionLibrary')
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get();
@@ -204,12 +193,12 @@ class FoodService
      */
     protected function updateDailyFoodSummary(int $userId, $date, array $foodNutrients, string $operation): void
     {
-        // Pastikan $date adalah instance Carbon atau string 'YYYY-MM-DD'
+
         $summaryDate = Carbon::parse($date)->toDateString();
 
         $summary = SummaryFood::firstOrNew([
             'user_id' => $userId,
-            'date' => $summaryDate, // Gunakan tanggal konsumsi
+            'date' => $summaryDate,
         ]);
 
         foreach (
