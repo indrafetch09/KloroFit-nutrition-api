@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Laravel\Sanctum\PersonalAccessToken;
+
 
 class AuthController extends Controller
 {
@@ -138,6 +138,7 @@ class AuthController extends Controller
             ], 500);
         }
     }
+
     /**
      * Logout user (revoke current token)
      */
@@ -158,44 +159,6 @@ class AuthController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Logout successful'
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Refresh token
-     */
-    public function refreshToken(Request $request)
-    {
-        try {
-            $user = $request->user();
-            $currentToken = $request->user()->currentAccessToken();
-
-            if ($currentToken && $currentToken instanceof PersonalAccessToken) {
-                $currentToken->delete();
-            }
-
-            // Create new token
-            $newToken = $user->createToken(
-                $currentToken->name,
-                ['*'],
-                now()->addDays(30)
-            );
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Token refreshed successfully',
-                'data' => [
-                    'token' => $newToken->plainTextToken,
-                    'token_type' => 'Bearer',
-                    'expires_at' => $newToken->accessToken->expires_at,
-                ]
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
