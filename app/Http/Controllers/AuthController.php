@@ -7,8 +7,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
-use Laravel\Sanctum\PersonalAccessToken;
 use Illuminate\Support\Facades\Validator;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
@@ -39,8 +39,11 @@ class AuthController extends Controller
                 'password' => Hash::make($request->password),
             ]);
 
+            $deviceName = $request->header('User-Agent') ?? 'Unkown Device';
+
             // Generate token
             $token = $user->createToken(
+                $deviceName,
                 ['*'],
                 now()->addDays(30)
             );
@@ -59,7 +62,7 @@ class AuthController extends Controller
                     'token_type' => 'Bearer',
                     'expires_in' => now()->addDays(30)->timestamp
                 ]
-            ], 201);
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -101,10 +104,13 @@ class AuthController extends Controller
             }
 
             // Hapus token lama
-            $user->tokens()->where('name', $request->delete());
+            $user->tokens()->delete();
+
+            $deviceName = $request->header('User-Agent') ?? 'Unkown device';
 
             // Generate token baru
             $token = $user->createToken(
+                $deviceName,
                 ['*'],
                 now()->addDays(30)
             );
