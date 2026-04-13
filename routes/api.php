@@ -24,7 +24,7 @@ Route::prefix('v1')->group(function () {
     // Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
 
     // Protected routes
-    Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+    Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/change-password', [AuthController::class, 'changePassword']);
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/logout-all', [AuthController::class, 'logoutAll']);
