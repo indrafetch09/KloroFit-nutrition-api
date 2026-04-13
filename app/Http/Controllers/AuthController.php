@@ -144,17 +144,21 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         try {
-            $user = $request->user();
-            $token = $user->currentAccessToken();
 
-            if ($token && $token instanceof PersonalAccessToken) {
-                $token->delete();
-            }
+            $user = $request->user();
+
+            // delete all token when user choose to logout to all devices
+            if ($request->input('all_devices')) {
+                $user->tokens()->delete();
+            } else {
+                // only delete current token when user logout  
+                $user->currentAccessToken()->delete();
+            };
 
             return response()->json([
                 'success' => true,
                 'message' => 'Logout successful'
-            ]);
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -163,28 +167,6 @@ class AuthController extends Controller
             ], 500);
         }
     }
-
-    // /**
-    //  * Logout from all devices
-    //  */
-    // public function logoutAll(Request $request)
-    // {
-    //     try {
-    //         // Revoke all tokens
-    //         $request->user()->tokens()->delete();
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => 'Logged out from all devices successfully'
-    //         ], 200);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Something went wrong',
-    //             'error' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
 
     /**
      * Refresh token
