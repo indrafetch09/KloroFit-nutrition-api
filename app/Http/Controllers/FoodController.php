@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Services\FoodService;
 use Illuminate\Http\JsonResponse;
+use App\Services\FoodService;
 use App\Http\Requests\FoodRequest;
 use App\Http\Resources\FoodResource;
 use App\Http\Requests\StoreFoodRequest;

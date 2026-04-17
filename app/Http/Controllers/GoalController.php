@@ -6,8 +6,6 @@ use App\Http\Requests\GoalRequest;
 use App\Http\Resources\GoalResource;
 use App\Services\GoalService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class GoalController extends Controller
